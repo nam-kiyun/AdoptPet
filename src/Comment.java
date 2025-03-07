@@ -5,6 +5,16 @@ public class Comment {
 	private String content;
 	private String author;
 	private LocalDateTime createAt;
+	private LocalDateTime editAt;
+	
+	
+	public Comment(int commentNum, String content, String author, LocalDateTime createAt) {
+		super();
+		CommentNum = commentNum;
+		this.content = content;
+		this.author = author;
+		this.createAt = createAt;
+	}
 	
 	public int getCommentNum() {
 		return CommentNum;
