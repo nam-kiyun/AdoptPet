@@ -13,10 +13,9 @@ public class Post {
 	private LocalDateTime createAt;
 	private LocalDateTime updateDate;
 	private Map<Integer, Comment> commentsMap;
-	
+
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	
-	
+
 	public Post(int postNum, String title, String content, String author, LocalDateTime createAt,
 			LocalDateTime updateDate, Map<Integer, Comment> commentsMap) {
 		this.postNum = postNum;
@@ -31,16 +30,16 @@ public class Post {
 	public void writeComment() throws IOException {
 		System.out.println("댓글을 입력하세요.");
 		String str = br.readLine();
-		Comment comment = new Comment(commentsMap.size(), str , this.author, LocalDateTime.now());
+		Comment comment = new Comment(commentsMap.size(), str, this.author, LocalDateTime.now(), LocalDateTime.now());
 		commentsMap.put(commentsMap.size(), comment);
 	}
-	
+
 	public void editComment() {
-		
+
 	}
-	
+
 	public void deleteComment() {
-		
+
 	}
 
 	public int getPostNum() {
@@ -98,5 +97,5 @@ public class Post {
 	public void setCommentsMap(Map<Integer, Comment> commentsMap) {
 		this.commentsMap = commentsMap;
 	}
-	
+
 }
