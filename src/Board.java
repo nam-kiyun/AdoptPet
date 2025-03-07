@@ -29,7 +29,7 @@ public class Board implements Serializable {
 		int postNum = postCounter++;
 		Post post = new Post(postNum, title, author, content);
 
-		// 확인
+		// 확인용
 		System.out.println("생성된 postNum: " + post.getPostNum());
 
 		postsMap.put(postNum, post);
