@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Post {
 	private int postNum;
@@ -12,6 +13,7 @@ public class Post {
 	private String author;
 	private LocalDateTime createAt;
 	private LocalDateTime updateDate;
+	private String userId;
 	private Map<Integer, Comment> commentsMap;
 
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -24,6 +26,7 @@ public class Post {
 		this.author = author;
 		this.createAt = createAt;
 		this.updateDate = updateDate;
+		this.userId = Client.nowUserId;
 		this.commentsMap = new HashMap<Integer, Comment>();
 	}
 
@@ -34,8 +37,17 @@ public class Post {
 		commentsMap.put(commentsMap.size(), comment);
 	}
 
-	public void editComment() {
-
+	public void editComment() throws IOException {
+		Set<Integer> set = commentsMap.keySet();
+		System.out.println("댓글 번호를 입력해주세요.");
+		int n = Integer.parseInt(br.readLine()); 
+		for(Integer num : set) {
+			if(n==num) {
+				if(this.userId.equals(commentsMap.get(num).getUserId()))
+				System.out.println("댓글을 새로 입력해주세요");
+				commentsMap.get(num).setContent(br.readLine());
+			}
+		}
 	}
 
 	public void deleteComment() {
@@ -96,6 +108,14 @@ public class Post {
 
 	public void setCommentsMap(Map<Integer, Comment> commentsMap) {
 		this.commentsMap = commentsMap;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
 }
