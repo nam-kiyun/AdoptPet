@@ -1,4 +1,8 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Post {
@@ -10,8 +14,25 @@ public class Post {
 	private LocalDateTime updateDate;
 	private Map<Integer, Comment> commentsMap;
 	
-	public void writeComment() {
-		
+	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	
+	
+	public Post(int postNum, String title, String content, String author, LocalDateTime createAt,
+			LocalDateTime updateDate, Map<Integer, Comment> commentsMap) {
+		this.postNum = postNum;
+		this.title = title;
+		this.content = content;
+		this.author = author;
+		this.createAt = createAt;
+		this.updateDate = updateDate;
+		this.commentsMap = new HashMap<Integer, Comment>();
+	}
+
+	public void writeComment() throws IOException {
+		System.out.println("댓글을 입력하세요.");
+		String str = br.readLine();
+		Comment comment = new Comment(commentsMap.size(), str , this.author, LocalDateTime.now());
+		commentsMap.put(commentsMap.size(), comment);
 	}
 	
 	public void editComment() {
@@ -77,6 +98,5 @@ public class Post {
 	public void setCommentsMap(Map<Integer, Comment> commentsMap) {
 		this.commentsMap = commentsMap;
 	}
-	
 	
 }
