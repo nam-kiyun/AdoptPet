@@ -8,14 +8,21 @@ public class Comment {
 	private LocalDateTime editAt;
 	
 	
-	public Comment(int commentNum, String content, String author, LocalDateTime createAt) {
+	public Comment(int commentNum, String content, String author, LocalDateTime createAt, LocalDateTime editAt) {
 		super();
 		CommentNum = commentNum;
 		this.content = content;
 		this.author = author;
 		this.createAt = createAt;
+		this.editAt = editAt;
 	}
 	
+	@Override
+	public String toString() {
+		return "Comment [CommentNum=" + CommentNum + ", content=" + content + ", author=" + author + ", createAt="
+				+ createAt + ", editAt=" + editAt + "]";
+	}
+
 	public int getCommentNum() {
 		return CommentNum;
 	}
