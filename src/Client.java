@@ -11,12 +11,11 @@ import java.util.Set;
 public class Client extends User {
 	private int wrongCount;
 	private LocalDateTime banTime;
-	private Map<String, Client> clientsMap;
 	private static String nowUserId;
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
 	public void register() {// todo 아이디 저장, 비밀번호 저장, 닉네임저장, 기존 아이디비교
-		Set<String> idSet = clientsMap.keySet(); // id 목록 set저장
+		Set<String> idSet = super.clientsMap.keySet(); // id 목록 set저장
 		String userId = "", password = "", nickName = "";
 		idInsertAgain: // id 중복시 라벨
 		while (true) { // 계정생성 완료까지 반복
@@ -42,7 +41,7 @@ public class Client extends User {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			Collection nickList = this.clientsMap.values();
+			Collection nickList = super.clientsMap.values();
 			//현재 로그인 id를 키값으로 values, 즉 클라이언트 리스트를 컬렉션에 저장
 			Iterator<Collection> iterator = nickList.iterator();
 			//해당 컬렉션을 이터레이터
@@ -63,7 +62,7 @@ public class Client extends User {
 					}
 					else
 					{
-						this.clientsMap.get(nowUserId).setNickName(nickName);
+						super.clientsMap.get(nowUserId).setNickName(nickName);
 						System.out.println("닉네임이 성공적으로 변경되었습니다.");
 						break;
 					}
@@ -72,7 +71,7 @@ public class Client extends User {
 				
 
 	
-			clientsMap.put(userId, new Client(userId, password, nickName));
+				super.clientsMap.put(userId, new Client(userId, password, nickName));
 			System.out.println("회원가입이 정상적으로 완료 되었습니다.");
 			return;
 
@@ -83,7 +82,7 @@ public class Client extends User {
 		System.out.print("비밀번호 확인: ");
 		try {
 			String insertPassWord = br.readLine();
-			if (insertPassWord.equals(clientsMap.get(nowUserId).getPassword())) {
+			if (insertPassWord.equals(super.clientsMap.get(nowUserId).getPassword())) {
 				// 현재 로그인된 아이디를 키값으로 해당 유저리스트 맵 벨류인 유저 객체의 패스워드를 겟 한 후 입력한 패스워드와 비교
 				while (true) {
 					System.out.print("변경할 정보를 선택해주세요(1.비밀번호, 2.닉네임)");// true 변경사항 선택
@@ -92,13 +91,13 @@ public class Client extends User {
 					case 1:
 						System.out.print("변경할 비밀번호를 입력해주세요");// true 변경사항 선택
 						String chpass = br.readLine();
-						this.clientsMap.get(nowUserId).setPassword(chpass);
+						super.clientsMap.get(nowUserId).setPassword(chpass);
 						// 클라이언트 맵 키값으로 현재 로그인 아이디 값으로 밸류값으로 클라이언트 객체불러와 set로 패스워드 변경
 						System.out.println("비밀번호가 성공적으로 변경되었습니다.");
 						return;
 
 					case 2:
-						Collection nickList = this.clientsMap.values();
+						Collection nickList = super.clientsMap.values();
 						// 현재 로그인 id를 키값으로 values, 즉 클라이언트 리스트를 컬렉션에 저장
 						Iterator<Collection> iterator = nickList.iterator();
 						// 해당 컬렉션을 이터레이터
@@ -116,7 +115,7 @@ public class Client extends User {
 							if (c.getNickName().equals(changeNickName)) {
 								System.out.println("이미 사용중인 닉네임입니다. ");
 							} else {
-								this.clientsMap.get(nowUserId).setNickName(changeNickName);
+								super.clientsMap.get(nowUserId).setNickName(changeNickName);
 								System.out.println("닉네임이 성공적으로 변경되었습니다.");
 								break;
 							}
@@ -174,12 +173,10 @@ public class Client extends User {
 	}
 
 	public Map<String, Client> getClientsMap() {
-		return clientsMap;
+		return super.clientsMap;
 	}
 
-	public void setClientsMap(Map<String, Client> clientsMap) {
-		this.clientsMap = clientsMap;
-	}
+	
 
 	Client(String userId, String password, String nickName) {//클라이언트 생성자(회원가입시)
 		super.setUserId(userId);
