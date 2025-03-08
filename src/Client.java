@@ -142,7 +142,28 @@ public class Client extends User {
 	}
 	
 	public void deleteAccount() {
+		System.out.print("회원탈퇴를 진행하려면 비밀번호를 입력해주세요: ");
 		
+			String insertPassWord="";
+			try {
+				insertPassWord = br.readLine();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (insertPassWord.equals(super.clientsMap.get(nowUserId).getPassword())) {
+				// 현재 로그인된 아이디를 키값으로 해당 유저리스트 맵 벨류인 유저 객체의 패스워드를 겟 한 후 입력한 패스워드와 비교
+				super.clientsMap.remove(insertPassWord); //해당 계정 map 에서 삭제
+				this.nowUserId=""; //현재 로그인된 계정이 삭제되므로 현재 로그인 id값 초기화
+				System.out.println("계정이 성공적으로 삭제되었습니다.");
+				//초기 로그인 화면 호출
+			}
+			else {
+				System.out.println("비밀번호가 맞지 않습니다.");
+				//이전 메뉴 호출
+			}
+			
+				
+			
 	}
 	
 	static void showUserList() {
