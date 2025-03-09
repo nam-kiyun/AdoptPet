@@ -1,14 +1,11 @@
-import java.io.*;
-import java.util.*;
+import java.util.Map;
 
-public abstract class User implements Serializable {
+public abstract class User {
 	private String userId;
 	private String password;
 	private String nickName;
-	/*
-		데이터 로드 중 오류 발생! 파일이 손상되었을 수 있습니다.
-		java.io.InvalidClassException: User; local class incompatible: stream classdesc serialVersionUID = 1, local class serialVersionUID = 3598836385826725148
-	 */
+	protected Map<String, Client> clientsMap;
+
 	private static final long serialVersionUID = 1L;
 
 	private static Map<String, User> userMap = new HashMap<>();
