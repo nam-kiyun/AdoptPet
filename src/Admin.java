@@ -5,10 +5,12 @@ import java.util.Scanner;
 public class Admin extends User implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public Admin(String userId, String password) {
-        super(userId, password);
-    }
-
+    public Admin(String userId, String password, String nickName) {
+		super.setUserId(userId);
+		super.setPassword(password);
+		super.setNickName(nickName);
+	}
+    
     public void searchUser(String userId) {
         Map<String, User> userMap = User.getUserMap();
         if (userMap.containsKey(userId)) {

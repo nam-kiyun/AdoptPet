@@ -28,15 +28,14 @@ public class Post {
 
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-	public Post(int postNum, String title, String content, String author, LocalDateTime createAt,
-			LocalDateTime updateDate, Map<Integer, Comment> commentsMap) {
+	public Post(int postNum, String title, String content, String author) {
 		this.postNum = postNum;
 		this.title = title;
 		this.content = content;
 		this.author = author;
-		this.createAt = createAt;
-		this.updateDate = updateDate;
-		this.userId = Client.nowUserId;
+		this.createAt = LocalDateTime.now();
+		this.updateDate = LocalDateTime.now();
+		this.userId = Client.getNowUserId();
 		this.commentsMap = new HashMap<Integer, Comment>();
 	}
 

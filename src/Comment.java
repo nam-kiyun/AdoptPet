@@ -14,7 +14,7 @@ public class Comment implements Serializable {
 		this.commentNum = commentNum;
 		this.content = content;
 		this.author = author;
-		this.userId = Client.nowUserId;
+		this.userId = Client.getNowUserId();
 		this.createAt = createAt;
 		this.editAt = editAt;
 	}
