@@ -1,20 +1,21 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class User {
 	private String userId;
 	private String password;
 	private String nickName;
-	protected Map<String, Client> clientsMap;
 
 	private static final long serialVersionUID = 1L;
 
 	private static Map<String, User> userMap = new HashMap<>();
 	public static final String path = "C:\\AdoptPet\\userList.txt"; // 저장할 파일 경로
-
-	public User(String userId, String password) {
-		this.userId = userId;
-		this.password = password;
-	}
 
 	public static Map<String, User> getUserMap() {
 		return userMap;
@@ -58,7 +59,7 @@ public abstract class User {
 		System.out.println("기본 Admin 계정을 확인.");
 
 		if (!userMap.containsKey("admin")) {
-			Admin defaultAdmin = new Admin("admin", "admin123");
+			Admin defaultAdmin = new Admin("admin", "admin123","관리자");
 			defaultAdmin.setNickName("관리자");
 			userMap.put("admin", defaultAdmin);
 			save();
