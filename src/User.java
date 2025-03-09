@@ -1,8 +1,10 @@
+import java.util.Map;
 
 public abstract class User {
 	private String userId;
 	private String password;
 	private String nickName;
+	protected Map<String, Client> clientsMap;
 
 	public void login() {
 		
