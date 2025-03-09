@@ -75,12 +75,8 @@ public abstract class User implements Serializable {
             System.out.println("비밀번호가 일치하지 않습니다.");
         }
         System.out.println("로그인 성공!");
-        // Admin 또는 Client에 따른 메뉴 실행
-        if (user instanceof Admin) {
-            ((Admin) user).menu();
-        } else if (user instanceof Client) {
-            ((Client) user).menu();
-        }
+
+        user.menu();
 
 
     }
