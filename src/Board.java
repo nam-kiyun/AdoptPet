@@ -13,6 +13,7 @@ public class Board implements Serializable {
 	private int postCounter = 1; // 게시글 번호 증가
 	private HashMap<Integer, Post> postsMap; // 게시글 관리
 
+
 	public Board(String BoardName) {
 		this.boardName = boardName;
 		// this.boardNum = boardNum;
@@ -21,7 +22,6 @@ public class Board implements Serializable {
 		this.postsMap = new HashMap<Integer, Post>();
 
 		loadPost();
-
 	}
 
 	// 게시글 작성
@@ -40,14 +40,15 @@ public class Board implements Serializable {
 	private void savePosts(Post post) {
 		String fileName = boardPath + "\\post_" + post.getPostNum() + ".txt";
 
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+		// 저장할 때 덮어씌우지 않기
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
 
 			writer.write("번호: " + post.getPostNum() + "\n");
 			writer.write("제목: " + post.getTitle() + "\n");
 			writer.write("작성자: " + post.getAuthor() + "\n");
 			writer.write("작성일: " + post.getCreateAt() + "\n");
 			writer.write("내용: " + post.getContent() + "\n");
-
+			writer.write("--------------------------------\n");
 			System.out.println("게시글 저장완료: " + fileName);
 
 		} catch (IOException e) {
