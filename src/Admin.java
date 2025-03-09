@@ -6,11 +6,15 @@ public class Admin extends User implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public Admin(String userId, String password, String nickName) {
-		super.setUserId(userId);
-		super.setPassword(password);
-		super.setNickName(nickName);
-	}
-    
+        // setUserId, setPassword, setNickName 메서드를 사용해도 되지만, 부모 클래스의 생성자를 호출하는 것이 더 좋다.
+        /*
+        객체 생성과 동시에 올바르게 초기화됨.
+        NullPointerException을 방지할 수 있음.
+         */
+        super(userId, password, nickName);
+    }
+
+
     public void searchUser(String userId) {
         Map<String, User> userMap = User.getUserMap();
         if (userMap.containsKey(userId)) {
@@ -55,11 +59,11 @@ public class Admin extends User implements Serializable {
             System.out.println("1. 전체 사용자 목록 보기");
             System.out.println("2. 사용자 검색");
             System.out.println("3. 사용자 삭제");
-            System.out.println("0. 로그아웃");
+            System.out.println("0. 종료");
             System.out.print("선택 >> ");
             Scanner scanner = new Scanner(System.in);
             int choice = scanner.nextInt();
-            scanner.nextLine(); // 버퍼 클리어
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -76,7 +80,7 @@ public class Admin extends User implements Serializable {
                     deleteUser(deleteId);
                     break;
                 case 0:
-                    System.out.println("로그아웃 되었습니다.");
+                    System.out.println("종료 되었습니다.");
                     return;
                 default:
                     System.out.println("잘못된 입력입니다. 다시 선택하세요.");
