@@ -75,7 +75,7 @@ public class Admin extends User implements Serializable {
                     searchUser(searchId);
                     break;
                 case 3:
-                    System.out.print("🗑 삭제할 아이디 입력: ");
+                    System.out.print("삭제할 아이디 입력: ");
                     String deleteId = scanner.nextLine();
                     deleteUser(deleteId);
                     break;
