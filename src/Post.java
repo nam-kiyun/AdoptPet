@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +16,7 @@ public class Post {
 	private LocalDateTime updateDate;
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
+	private int commentNumCount = 1;
 
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -30,13 +32,16 @@ public class Post {
 		this.commentsMap = new HashMap<Integer, Comment>();
 	}
 
+	// 댓글 달기
 	public void writeComment() throws IOException {
+		int commentNum = commentNumCount++;
 		System.out.println("댓글을 입력하세요.");
 		String str = br.readLine();
-		Comment comment = new Comment(commentsMap.size(), str, this.author, LocalDateTime.now(), LocalDateTime.now());
-		commentsMap.put(commentsMap.size(), comment);
+		Comment comment = new Comment(commentNum ,str, this.author, LocalDateTime.now(), LocalDateTime.now());
+		commentsMap.put(comment.getCommentNum(), comment);
 	}
 
+	// 댓글 수정
 	public void editComment() throws IOException {
 		Set<Integer> set = commentsMap.keySet();
 		System.out.println("댓글 번호를 입력해주세요.");
@@ -50,8 +55,18 @@ public class Post {
 		}
 	}
 
-	public void deleteComment() {
-
+	// 댓글 삭제
+	public void deleteComment() throws IOException {
+		Set<Integer> set = commentsMap.keySet();
+		Iterator<Integer> it = set.iterator();
+		System.out.println("댓글 번호를 입력해주세요.");
+		int n = Integer.parseInt(br.readLine()); 
+		while(it.hasNext()) {
+			int num = it.next();
+			if(n==num) {
+				it.remove();
+			}
+		}
 	}
 
 	public int getPostNum() {
