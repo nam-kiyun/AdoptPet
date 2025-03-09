@@ -24,7 +24,6 @@ public class Post {
 	private LocalDateTime updateDate;
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
-	private static int commentNumCount = 1;
 
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -39,7 +38,7 @@ public class Post {
 		this.commentsMap = new HashMap<Integer, Comment>();
 	}
 
-	// 댓글 달기
+	// 댓글 달기	
 	public void writeComment() {
 		System.out.println("댓글을 입력하세요.");
 		String str = null;
@@ -48,10 +47,10 @@ public class Post {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Comment comment = new Comment(commentNumCount, str, this.author, LocalDateTime.now(), LocalDateTime.now());
-		commentsMap.put(comment.getCommentNum(), comment);
+		int num = Comment.getCommentNum();
+		Comment comment = new Comment(num, str, this.author, LocalDateTime.now(), LocalDateTime.now());
+		commentsMap.put(num, comment);
 		System.out.println("댓글이 작성되었습니다.");
-		commentNumCount++;
 	}
 
 	// 댓글 수정
