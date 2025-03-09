@@ -1,6 +1,10 @@
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -91,8 +95,36 @@ public class Post {
 		}
 		System.out.println("선택하신 댓글이 삭제되었습니다.");
 	}
+	
+	public void commentsSave() {
+		String path="C:\\AdoptPet\\cat\\Comments.txt";
+		
+		FileOutputStream fos = null;
+		BufferedOutputStream bos =null;
+		ObjectOutputStream oos = null;
+		
+		try {
+			fos = new FileOutputStream(new File(path));
+			bos = new BufferedOutputStream(fos);
+			oos = new ObjectOutputStream(bos);
+			
+			oos.writeObject(commentsMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				oos.close();
+				bos.close();
+				fos.close();
+			} catch (Exception e2) {
+				// TODO: handle exception
+			}
+		}
+	}
 
 	public void commentRun() {
+		
+		File file = new File(author);
 		while (true) {
 			String input = null;
 			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t0.종료");
@@ -112,6 +144,7 @@ public class Post {
 				deleteComment();
 				break;
 			case "0":
+				commentsSave();
 				return;
 			}
 		}
