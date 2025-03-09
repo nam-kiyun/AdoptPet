@@ -56,46 +56,31 @@ public abstract class User  implements Serializable{
             e.printStackTrace();
         }
     }
-    // 로그인 메서드
+    // 로그인 메서드 개선
     public static void login(String userId, String password) {
         System.out.println("로그인 시도: " + userId);
-        // userMap이 null인지 먼저 확인
-        if (userMap == null || userMap.isEmpty()) {
+        if(userMap == null || userMap.isEmpty()) {
             System.out.println("현재 등록된 사용자가 없습니다. 회원가입을 먼저 해주세요.");
             return;
-        }
-        // userMap에 userId가 존재하는지 확인
-        if (!userMap.containsKey(userId)) {
-            System.out.println("존재하지 않는 아이디입니다.");
-            return;
-        }
-        // userMap.get(userId)가 null인지 다시 확인
-        User user = userMap.get(userId);
-        if (user == null) {
-            System.out.println("사용자 정보를 찾을 수 없습니다.");
-            return;
-        }
-        //비밀번호가 null인지 확인
-        if (user.getPassword() == null) {
-            System.out.println("비밀번호가 null입니다.");
-            return;
-        }
-        // 비밀번호가 일치하는지 확인
-        if (!user.getPassword().equals(password)) {
-            System.out.println("비밀번호가 일치하지 않습니다.");
-            return;
-        }
-
-        System.out.println("로그인 성공!");
-
-        // Admin 또는 Client에 따른 메뉴 실행
-        if (user instanceof Admin) {
-            ((Admin) user).menu();
-        } else if (user instanceof Client) {
-            ((Client) user).menu();
+        }else{
+            if (!userMap.containsKey(userId)) {
+                System.out.println("존재하지 않는 아이디입니다.");
+            } else {
+                User user = userMap.get(userId);
+                if (!user.getPassword().equals(password)) {
+                    System.out.println("비밀번호가 일치하지 않습니다.");
+                } else {
+                    System.out.println("로그인 성공!");
+                   // Admin 또는 Client에 따른 메뉴 실행
+                    if (user instanceof Admin) {
+                        ((Admin) user).menu();
+                    } else if (user instanceof Client) {
+                        ((Client) user).menu();
+                    }
+                }
+            }
         }
     }
-
 
     // 프로그램 실행시 시행될 데이터 로드
         public static void initialize () {
