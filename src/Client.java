@@ -154,9 +154,7 @@ public class Client extends User {
 	}
 
 	Client(String userId, String password, String nickName) {//클라이언트 생성자(회원가입시)
-		super.setUserId(userId);
-		super.setPassword(password);
-		super.setNickName(nickName);
+		super(userId, password, nickName);
 	}
 	
 	public void setNowUserId() { //현재 로그인 id 정보 설정
