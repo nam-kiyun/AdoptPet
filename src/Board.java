@@ -1,5 +1,7 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
@@ -12,7 +14,6 @@ public class Board implements Serializable {
 	private String base_path = "C:\\AdoptPet\\cat";
 	private int postCounter = 1; // 게시글 번호 증가
 	private HashMap<Integer, Post> postsMap; // 게시글 관리
-
 
 	public Board(String BoardName) {
 		this.boardName = boardName;
@@ -41,11 +42,12 @@ public class Board implements Serializable {
 		String fileName = boardPath + "\\post_" + post.getPostNum() + ".txt";
 
 		// 저장할 때 덮어씌우지 않기
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
 
 			writer.write("번호: " + post.getPostNum() + "\n");
 			writer.write("제목: " + post.getTitle() + "\n");
-			writer.write("작성자: " + post.getAuthor() + "\n");
+			// 로그인한 작성자 닉네임으로
+			// writer.write("작성자: " + post.getAuthor() + "\n");
 			writer.write("작성일: " + post.getCreateAt() + "\n");
 			writer.write("내용: " + post.getContent() + "\n");
 			writer.write("--------------------------------\n");
@@ -59,6 +61,10 @@ public class Board implements Serializable {
 
 	// 저장된 파일 불러오기
 	private void loadPost() {
+		File folder = new File(boardPath);
+//		if (!folder.exists()) {
+//			folder.mkdir();
+//		}
 
 	}
 
@@ -79,24 +85,40 @@ public class Board implements Serializable {
 
 	// 게시글 삭제
 	public void deletePost(int postNum) {
+		//게시글 목록을 먼저 출력-> 사용자가 삭제할 게시글 확인
+		listAllPosts();
+		
 		// postMap에 해당 postNum 있는지 확인
 		if (postsMap.containsKey(postNum)) {
-			// 게시글 지우기
-			postsMap.remove(postNum);
-
-			// 기존 파일도 삭제
-			File postFile = new File(boardPath + postNum + ".txt");
-			if (postFile.exists() && postFile.delete()) {
-				System.out.println("게시글" + postNum + "삭제 완료.");
-			} else {
-				System.out.println("해당 번호의 게시글이 없습니다.");
-			}
-
+			System.out.println("해당 번호의 게시글이 존재하지 않습니다.");
+			return;
 		}
+		// 게시글 지우기
+		postsMap.remove(postNum);
+
+		// 기존 파일도 삭제
+		File postFile = new File(boardPath + "\\post_" + postNum + ".txt");
+		if (postFile.exists() && postFile.delete()) {
+			System.out.println("게시글" + postNum + "삭제 완료.");
+		} else {
+			System.out.println("게시글 삭제 완료, 파일 삭제 실패");
+		}
+
 	}
 
-	// 모든 게시글 출력 (미정)
+	// 모든 게시글 출력
 	public void listAllPosts() {
+		if (postsMap.isEmpty()) {
+			System.out.println("등록된 게시글이 없습니다.");
+			return;
+		}
+
+		System.out.println("=========게시글 목록=========");
+		for (Post post : postsMap.values()) {
+			System.out
+					.println("번호: " + post.getPostNum() + " | 제목: " + post.getTitle() + " | 작성자: " + post.getAuthor());
+		}
+		System.out.println("==========================");
 	}
 
 	// 특정 게시물 검색 (미정)
