@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Comment {
+public class Comment implements Serializable {
 	private int commentNum;
 	private String content;
 	private String author;
