@@ -1,11 +1,15 @@
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -20,7 +24,7 @@ public class Post {
 	private LocalDateTime updateDate;
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
-	private int commentNumCount = 1;
+	private static int commentNumCount = 1;
 
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -38,24 +42,24 @@ public class Post {
 
 	// 댓글 달기
 	public void writeComment() {
-		int commentNum = commentNumCount++;
 		System.out.println("댓글을 입력하세요.");
-		String str=null;
+		String str = null;
 		try {
 			str = br.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Comment comment = new Comment(commentNum, str, this.author, LocalDateTime.now(), LocalDateTime.now());
+		Comment comment = new Comment(commentNumCount, str, this.author, LocalDateTime.now(), LocalDateTime.now());
 		commentsMap.put(comment.getCommentNum(), comment);
 		System.out.println("댓글이 작성되었습니다.");
+		commentNumCount++;
 	}
 
 	// 댓글 수정
-	public void editComment(){
+	public void editComment() {
 		Set<Integer> set = commentsMap.keySet();
 		System.out.println("댓글 번호를 입력해주세요.");
-		int n=0;
+		int n = 0;
 		try {
 			n = Integer.parseInt(br.readLine());
 		} catch (Exception e) {
@@ -80,7 +84,7 @@ public class Post {
 		Set<Integer> set = commentsMap.keySet();
 		Iterator<Integer> it = set.iterator();
 		System.out.println("댓글 번호를 입력해주세요.");
-		int n=0;
+		int n = 0;
 		try {
 			n = Integer.parseInt(br.readLine());
 		} catch (NumberFormatException | IOException e) {
@@ -95,36 +99,60 @@ public class Post {
 		}
 		System.out.println("선택하신 댓글이 삭제되었습니다.");
 	}
-	
-	public void commentsSave() {
-		String path="C:\\AdoptPet\\cat\\Comments.txt";
-		
+
+	public void commentSave() {
+		String path = "C:\\AdoptPet\\cat\\Comments.txt";
+
 		FileOutputStream fos = null;
-		BufferedOutputStream bos =null;
+		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null;
-		
+
 		try {
 			fos = new FileOutputStream(new File(path));
 			bos = new BufferedOutputStream(fos);
 			oos = new ObjectOutputStream(bos);
-			
+
 			oos.writeObject(commentsMap);
+
+			oos.close();
+			bos.close();
+			fos.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				oos.close();
-				bos.close();
-				fos.close();
-			} catch (Exception e2) {
-				// TODO: handle exception
+		}
+	}
+
+	public void commentLoad() {
+		String path = "C:\\AdoptPet\\cat\\Comments.txt";
+		File file = new File(path);
+
+		try {
+			FileInputStream fis = new FileInputStream(file);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			ObjectInputStream ois = new ObjectInputStream(bis);
+
+			this.commentsMap = (HashMap) ois.readObject();
+			Set<Integer> set = this.commentsMap.keySet();
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
+			System.out.println("번호\t댓글\t작성자\t작성시간");
+
+			for (Integer number : set) {
+				int num = this.commentsMap.get(number).getCommentNum();
+				String comment = this.commentsMap.get(number).getContent();
+				String author = this.commentsMap.get(number).getAuthor();
+				String time = this.commentsMap.get(number).getCreateAt().format(dtf);
+				System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
 			}
+			ois.close();
+			bis.close();
+			fis.close();
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
 	}
 
 	public void commentRun() {
-		
-		File file = new File(author);
+		commentLoad();
 		while (true) {
 			String input = null;
 			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t0.종료");
@@ -144,7 +172,7 @@ public class Post {
 				deleteComment();
 				break;
 			case "0":
-				commentsSave();
+				commentSave();
 				return;
 			}
 		}
