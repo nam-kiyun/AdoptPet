@@ -1,34 +1,34 @@
 import java.time.LocalDateTime;
 
 public class Comment {
-	private int CommentNum;
+	private int commentNum;
 	private String content;
 	private String author;
 	private String userId;
 	private LocalDateTime createAt;
 	private LocalDateTime editAt;
 	
-	public Comment(int commentNum, String content, String author, LocalDateTime createAt, LocalDateTime editAt) {
+	public Comment(int commentNum,String content, String author, LocalDateTime createAt, LocalDateTime editAt) {
 		super();
-		CommentNum = commentNum;
+		this.commentNum = commentNum;
 		this.content = content;
 		this.author = author;
 		this.userId = Client.nowUserId;
 		this.createAt = createAt;
 		this.editAt = editAt;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Comment [CommentNum=" + CommentNum + ", content=" + content + ", author=" + author + ", createAt="
+		return "Comment [CommentNum=" + commentNum + ", content=" + content + ", author=" + author + ", createAt="
 				+ createAt + ", editAt=" + editAt + "]";
 	}
 
 	public int getCommentNum() {
-		return CommentNum;
+		return commentNum;
 	}
 	public void setCommentNum(int commentNum) {
-		CommentNum = commentNum;
+		this.commentNum = commentNum;
 	}
 	public String getContent() {
 		return content;
