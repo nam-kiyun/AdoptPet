@@ -33,38 +33,86 @@ public class Post {
 	}
 
 	// 댓글 달기
-	public void writeComment() throws IOException {
+	public void writeComment() {
 		int commentNum = commentNumCount++;
 		System.out.println("댓글을 입력하세요.");
-		String str = br.readLine();
-		Comment comment = new Comment(commentNum ,str, this.author, LocalDateTime.now(), LocalDateTime.now());
+		String str=null;
+		try {
+			str = br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Comment comment = new Comment(commentNum, str, this.author, LocalDateTime.now(), LocalDateTime.now());
 		commentsMap.put(comment.getCommentNum(), comment);
+		System.out.println("댓글이 작성되었습니다.");
 	}
 
 	// 댓글 수정
-	public void editComment() throws IOException {
+	public void editComment(){
 		Set<Integer> set = commentsMap.keySet();
 		System.out.println("댓글 번호를 입력해주세요.");
-		int n = Integer.parseInt(br.readLine()); 
-		for(Integer num : set) {
-			if(n==num) {
-				if(this.userId.equals(commentsMap.get(num).getUserId()))
-				System.out.println("댓글을 새로 입력해주세요");
-				commentsMap.get(num).setContent(br.readLine());
+		int n=0;
+		try {
+			n = Integer.parseInt(br.readLine());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		for (Integer num : set) {
+			if (n == num) {
+				if (this.userId.equals(commentsMap.get(num).getUserId()))
+					System.out.println("댓글을 새로 입력해주세요");
+				try {
+					commentsMap.get(num).setContent(br.readLine());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+		System.out.println("댓글이 수정되었습니다.");
 	}
 
 	// 댓글 삭제
-	public void deleteComment() throws IOException {
+	public void deleteComment() {
 		Set<Integer> set = commentsMap.keySet();
 		Iterator<Integer> it = set.iterator();
 		System.out.println("댓글 번호를 입력해주세요.");
-		int n = Integer.parseInt(br.readLine()); 
-		while(it.hasNext()) {
+		int n=0;
+		try {
+			n = Integer.parseInt(br.readLine());
+		} catch (NumberFormatException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		while (it.hasNext()) {
 			int num = it.next();
-			if(n==num) {
+			if (n == num) {
 				it.remove();
+			}
+		}
+		System.out.println("선택하신 댓글이 삭제되었습니다.");
+	}
+
+	public void commentRun() {
+		while (true) {
+			String input = null;
+			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t0.종료");
+			try {
+				input = br.readLine();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			switch (input) {
+			case "1":
+				writeComment();
+				break;
+			case "2":
+				editComment();
+				break;
+			case "3":
+				deleteComment();
+				break;
+			case "0":
+				return;
 			}
 		}
 	}
