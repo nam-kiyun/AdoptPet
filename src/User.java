@@ -1,104 +1,71 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
-public abstract class User implements Serializable{
+public abstract class User implements Serializable {
 	private String userId;
 	private String password;
 	private String nickName;
+	/*
+		데이터 로드 중 오류 발생! 파일이 손상되었을 수 있습니다.
+		java.io.InvalidClassException: User; local class incompatible: stream classdesc serialVersionUID = 1, local class serialVersionUID = 3598836385826725148
+	 */
+	private static final long serialVersionUID = 1L;
 
-	private Map<String, User> userMap = new HashMap<String, User>();
+	private static Map<String, User> userMap = new HashMap<>();
+	public static final String path = "C:\\AdoptPet\\userList.txt"; // 저장할 파일 경로
 
 	public User(String userId, String password) {
 		this.userId = userId;
 		this.password = password;
 	}
 
-	public void addUser(User user) {
-		if (userMap.containsKey(user)) {
-			System.out.println("이미 존재하는 아이디입니다.");
-			return;
-		} else {
-			System.out.println("put");
-			userMap.put(user.userId, user);
-			save();
-		}
-
+	public static Map<String, User> getUserMap() {
+		return userMap;
 	}
 
-	public void login(String userId, String password) {
-		if (!userMap.containsKey(userId)) {
-			System.out.println("없는 아이디 입니다.");
-			return;
-		} else {
-			if (!userMap.get(userId).getPassword().equals(password)) {
-				System.out.println("wrong password");
-				return;
-			} else {
-
-				System.out.println("login success");
-				this.userId = userId;
-				menu();
-			}
-		}
-
-	}
-
-	private void save() {
-//		String path = "C:\\AdoptPet\\" + userId + ".txt";
-		String path = "C:\\AdoptPet\\userList.txt";
-		File file = new File(path);
-
-		FileOutputStream fos = null;
-		ObjectOutputStream out = null;
-		try {
-			fos = new FileOutputStream(file, true);
-			out = new ObjectOutputStream(fos);
+	// 데이터 저장 메서드 (직렬화)
+	public static void save() {
+		try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(path))) {
 			out.writeObject(userMap);
-
-			out.close();
-			fos.close();
-
-		} catch (Exception e) {
+			System.out.println("사용자 데이터 저장 완료!");
+		} catch (IOException e) {
+			System.err.println("데이터 저장 중 오류 발생!");
 			e.printStackTrace();
-			// TODO: handle exception
 		}
-		System.out.println("text save");
 	}
 
-	void load() {
-		System.out.println("load start");
-		String path = "C:\\AdoptPet\\userList.txt";
+	// 데이터 로드 메서드
+	public static void load() {
 		File file = new File(path);
-
-		FileInputStream fis = null;
-		ObjectInputStream in = null;
-		try {
-			fis = new FileInputStream(file);
-			in = new ObjectInputStream(fis);
-			
-			userMap = (HashMap) in.readObject(); // 역질렬화
-			System.out.println("역직렬화");
-			Set<String> set = userMap.keySet();
-			for (String user : set) {
-//				if (user.contains(userId)) {
-					String userID = userMap.get(user).userId;
-					String nickName = userMap.get(user).nickName;
-					
-//				}
-					System.out.println("아이디 " +userId + "닉네임 " + nickName);
+		if (!file.exists()) {
+			System.out.println("기존 데이터가 없습니다. 새로운 파일을 생성합니다.");
+			return;
+		}
+		// 파일이 존재하면 데이터 로드 시도
+		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+			Object obj = in.readObject();
+			if (obj instanceof HashMap) {
+				userMap = (HashMap<String, User>) obj;
+				System.out.println("사용자 데이터 로드 완료! 현재 등록된 계정 수: " + userMap.size());
 			}
-			in.close();
-			fis.close();
 		} catch (Exception e) {
+			System.err.println("데이터 로드 중 오류 발생! 파일이 손상되었을 수 있습니다.");
 			e.printStackTrace();
-			// TODO: handle exception
+		}
+	}
+	// 프로그램 실행시 시행될 데이터 로드와 ,
+	public static void initialize() {
+		load();
+		System.out.println("사용자 데이터를 불러왔습니다.");
+		// 기본 Admin 계정 생성
+		System.out.println("기본 Admin 계정을 확인.");
+
+		if (!userMap.containsKey("admin")) {
+			Admin defaultAdmin = new Admin("admin", "admin123");
+			defaultAdmin.setNickName("관리자");
+			userMap.put("admin", defaultAdmin);
+			save();
+			System.out.println("기본 Admin 계정이 생성되었습니다. (ID: admin, PW: admin123)");
 		}
 	}
 
