@@ -10,11 +10,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.TreeSet;
 
 public class Post {
 	private int postNum;
@@ -55,6 +58,36 @@ public class Post {
 		System.out.println("댓글이 작성되었습니다.");
 	}
 
+	public void commentPrint() {
+		//순서가 없는 Set을 Treeset으로 순서대로 정렬
+		Set<Integer> set = new TreeSet<Integer>(this.commentsMap.keySet());
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
+		System.out.println("번호\t댓글\t작성자\t작성시간");
+
+		for (Integer number : set) {
+			int num = this.commentsMap.get(number).getCommentNum();
+			String comment = this.commentsMap.get(number).getContent();
+			String author = this.commentsMap.get(number).getAuthor();
+			String time = this.commentsMap.get(number).getCreateAt().format(dtf);
+			System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
+		}
+	}
+
+	public void reverseCommentPrint() {	//최신순
+		//Set은 순서가 없어서 List로 받아주고 최신순 정렬
+		List<Integer>list = new ArrayList<Integer>(this.commentsMap.keySet());
+		list.sort(Comparator.reverseOrder());
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
+		System.out.println("번호\t댓글\t작성자\t작성시간");
+
+		for (Integer number : list) {
+			int num = this.commentsMap.get(number).getCommentNum();
+			String comment = this.commentsMap.get(number).getContent();
+			String author = this.commentsMap.get(number).getAuthor();
+			String time = this.commentsMap.get(number).getCreateAt().format(dtf);
+			System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
+		}
+	}
 	// 댓글 수정
 	public void editComment() {
 		Set<Integer> set = commentsMap.keySet();
@@ -115,9 +148,15 @@ public class Post {
 		while (it.hasNext()) {
 			int num = it.next();
 			if (n == num) {
-				it.remove();
+				Comment comment = commentsMap.get(num);
 				delete = true;
-				System.out.println("선택하신 댓글이 삭제되었습니다.");
+				if (this.userId != null && this.userId.equals(comment.getUserId())) {
+					it.remove();
+					System.out.println("댓글이 삭제되었습니다.");
+				} else {
+					System.out.println("수정 권한이 없습니다.");
+				}
+				break;
 			}
 		}
 		if (!delete) {
@@ -164,17 +203,7 @@ public class Post {
 				int maxNum = map.keySet().stream().max(Integer::compareTo).orElse(0);
 				Comment.setCommentCounter(maxNum + 1);
 			}
-			Set<Integer> set = this.commentsMap.keySet().stream().sorted().collect(Collectors.toSet());
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
-			System.out.println("번호\t댓글\t작성자\t작성시간");
-
-			for (Integer number : set) {
-				int num = this.commentsMap.get(number).getCommentNum();
-				String comment = this.commentsMap.get(number).getContent();
-				String author = this.commentsMap.get(number).getAuthor();
-				String time = this.commentsMap.get(number).getCreateAt().format(dtf);
-				System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
-			}
+			commentPrint();
 			ois.close();
 			bis.close();
 			fis.close();
@@ -187,7 +216,7 @@ public class Post {
 		commentLoad();
 		while (true) {
 			String input = null;
-			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t0.종료");
+			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t4.정렬\t0.종료");
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 				input = br.readLine();
@@ -197,12 +226,18 @@ public class Post {
 			switch (input) {
 			case "1":
 				writeComment();
+				commentPrint();
 				break;
 			case "2":
 				editComment();
+				commentPrint();
 				break;
 			case "3":
 				deleteComment();
+				commentPrint();
+				break;
+			case "4":
+				reverseCommentPrint();
 				break;
 			case "0":
 				commentSave();
