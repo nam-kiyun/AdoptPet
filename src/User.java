@@ -6,7 +6,6 @@ public abstract class User implements Serializable {
     private String userId;
     private String password;
     private String nickName;
-    protected Map<String, Client> clientsMap;
     // 직렬화 버전을 고정
     // TODO: 직렬화 버전을 고정하는 이유를 아직 잘 모르겠음. 추후에 공부하고 추가할 것.
     private static final long serialVersionUID = 1L;
@@ -60,7 +59,7 @@ public abstract class User implements Serializable {
     }
 
     // 로그인 메서드 개선
-    public static void login(String userId, String password) {
+    public  void login(String userId, String password) {
         System.out.println("로그인 시도: " + userId);
         if (userMap == null || userMap.isEmpty()) {
             System.out.println("현재 등록된 사용자가 없습니다. 회원가입을 먼저 해주세요.");
