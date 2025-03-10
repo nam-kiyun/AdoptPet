@@ -5,8 +5,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +31,15 @@ public abstract class User implements Serializable {
 	public static Map<String, User> getUserMap() {
 		return userMap;
 	}
-
+    public static String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hashedBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 알고리즘이 지원되지 않습니다.", e);
+        }
+    }
 	// User 생성자
 	public User(String userId, String password, String nickName) {
 		this.userId = userId;
@@ -82,18 +94,20 @@ public abstract class User implements Serializable {
 			System.out.println("존재하지 않는 아이디입니다.");
 			return;
 		}
-		if (user.getBanDateTime() != null) {
-			long minutesSinceBan = ChronoUnit.MINUTES.between(user.getBanDateTime(), LocalDateTime.now());
-			if (minutesSinceBan < 10) {
-				System.out.println("비밀번호를 여러 번 틀렸습니다. " + (10 - minutesSinceBan) + "분 후에 다시 시도해주세요.");
-				return;
-			} else {
-				// 10분이 지났다면 banTime 초기화
-				user.setBanDateTime(null);
-				user.setWrongCount(0);
-			}
+		if (user.getBanDateTime() != null && user.getBanDateTime().plusMinutes(10).isAfter(LocalDateTime.now())) {
+			long remainingMinutes = ChronoUnit.MINUTES.between(LocalDateTime.now(),
+					user.getBanDateTime().plusMinutes(10));
+			System.out.println("비밀번호를 여러 번 틀렸습니다. " + remainingMinutes + "분 후에 다시 시도해주세요.");
+			return;
 		}
-		if (!user.getPassword().equals(PasswordUtil.hashPassword(password))) {
+
+		// 10분이 지났다면 banDateTime 초기화
+		if (user.getBanDateTime() != null && user.getBanDateTime().plusMinutes(10).isBefore(LocalDateTime.now())) {
+			user.setBanDateTime(null);
+			user.setWrongCount(0);
+		}
+
+		if (!user.getPassword().equals(hashPassword(password))) {
 			user.setWrongCount(user.getWrongCount() + 1);
 			System.out.println("비밀번호가 일치하지 않습니다.");
 			if (user.getWrongCount() >= 3) {
@@ -130,7 +144,7 @@ public abstract class User implements Serializable {
 		System.out.println("기본 Admin 계정을 확인.");
 
 		if (!userMap.containsKey("admin")) {
-			Admin defaultAdmin = new Admin("admin", PasswordUtil.hashPassword("admin123"), "관리자");
+			Admin defaultAdmin = new Admin("admin", hashPassword("admin123"), "관리자");
 			defaultAdmin.setWrongCount(0);
 			userMap.put("admin", defaultAdmin);
 			save();
@@ -145,7 +159,7 @@ public abstract class User implements Serializable {
 	public abstract void menu();
 
 	public void setPassword(String password) {
-		this.password = PasswordUtil.hashPassword(password);
+		this.password = hashPassword(password);
 	}
 
 	public int getWrongCount() {
