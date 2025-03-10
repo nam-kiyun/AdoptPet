@@ -48,7 +48,10 @@ public class Admin extends User implements Serializable {
 
         for (Map.Entry<String, User> entry : userMap.entrySet()) {
             System.out.println("아이디: " + entry.getKey() +
-                    ", 닉네임: " + (entry.getValue().getNickName() != null ? entry.getValue().getNickName() : "N/A"));
+                    ", 닉네임: " + (entry.getValue().getNickName() != null ? entry.getValue().getNickName() : "N/A")
+                    +" \t 비밀번호잘못 입력된 회수 : "+entry.getValue().getWrongCount()+"\t 밴남은 시간 : "
+                    +(entry.getValue().getBanDateTime()!=null ? entry.getValue().getBanDateTime() : "정지중이 아닙니다.") 
+                    	);
         }
     }
 

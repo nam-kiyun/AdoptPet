@@ -1,13 +1,10 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 
 public class Client extends User {
-	private int wrongCount;
-	private LocalDateTime banTime;
 	private static String nowUserId;
 	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -130,23 +127,7 @@ public class Client extends User {
 	@Override
 	public void menu() {
 		// TODO Auto-generated method stub
-		
-	}
-	
-	public int getWrongCount() {
-		return wrongCount;
-	}
-
-	public void setWrongCount(int wrongCount) {
-		this.wrongCount = wrongCount;
-	}
-
-	public LocalDateTime getBanTime() {
-		return banTime;
-	}
-
-	public void setBanTime(LocalDateTime banTime) {
-		this.banTime = banTime;
+			System.out.println("클라이언트 메뉴");
 	}
 
 	public Map<String, User> getUsersMap() {
