@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Post {
 	private int postNum;
@@ -24,9 +25,8 @@ public class Post {
 	private LocalDateTime updateDate;
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
-	private static int commentNumCount = 1;
 
-	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
 
 	public Post(int postNum, String title, String content, String author) {
 		this.postNum = postNum;
@@ -44,14 +44,17 @@ public class Post {
 		System.out.println("댓글을 입력하세요.");
 		String str = null;
 		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			str = br.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Comment comment = new Comment(commentNumCount, str, this.author, LocalDateTime.now(), LocalDateTime.now());
-		commentsMap.put(comment.getCommentNum(), comment);
+
+		// 가장 높은 commentNum을 찾아서 자동 증가
+		int newCommentNum = Comment.getNextCommentNum();
+		Comment comment = new Comment(newCommentNum, str, this.author, LocalDateTime.now(), LocalDateTime.now());
+		commentsMap.put(newCommentNum, comment);
 		System.out.println("댓글이 작성되었습니다.");
-		commentNumCount++;
 	}
 
 	// 댓글 수정
@@ -59,7 +62,7 @@ public class Post {
 		Set<Integer> set = commentsMap.keySet();
 		System.out.println("댓글 번호를 입력해주세요.");
 		int n = 0;
-		try {
+		try {	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			n = Integer.parseInt(br.readLine());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -69,13 +72,17 @@ public class Post {
 				if (this.userId.equals(commentsMap.get(num).getUserId()))
 					System.out.println("댓글을 새로 입력해주세요");
 				try {
+					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 					commentsMap.get(num).setContent(br.readLine());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				System.out.println("댓글이 수정되었습니다.");
+			} else {
+				System.out.println("잘못된 댓글 번호를 입력하셨습니다.");
+				break;
 			}
 		}
-		System.out.println("댓글이 수정되었습니다.");
 	}
 
 	// 댓글 삭제
@@ -85,18 +92,26 @@ public class Post {
 		System.out.println("댓글 번호를 입력해주세요.");
 		int n = 0;
 		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			n = Integer.parseInt(br.readLine());
 		} catch (NumberFormatException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		boolean delete = false;
+		//Iterator를 통해 순회 돌아서 일치할 경우 삭제
+		//그냥 Set상태로 for문 돌게 되면 Collection 오류 발생
 		while (it.hasNext()) {
 			int num = it.next();
 			if (n == num) {
 				it.remove();
+				delete = true;
+				System.out.println("선택하신 댓글이 삭제되었습니다.");
 			}
 		}
-		System.out.println("선택하신 댓글이 삭제되었습니다.");
+		if(!delete) {
+			System.out.println("잘못된 댓글 번호를 입력하였습니다.");
+		}
 	}
 
 	public void commentSave() {
@@ -130,8 +145,16 @@ public class Post {
 			BufferedInputStream bis = new BufferedInputStream(fis);
 			ObjectInputStream ois = new ObjectInputStream(bis);
 
-			this.commentsMap = (HashMap) ois.readObject();
-			Set<Integer> set = this.commentsMap.keySet();
+			HashMap<Integer, Comment> map = (HashMap) ois.readObject();
+			if (map != null) {
+				// 불러온 map데이터를 commnetsMap에 병합
+				this.commentsMap.putAll(map);
+//				this.commentsMap.stream().fil
+				// 가장 큰 commentNum을 찾아
+				int maxNum = map.keySet().stream().max(Integer::compareTo).orElse(0);
+				Comment.setCommentCounter(maxNum + 1);
+			}
+			Set<Integer> set = this.commentsMap.keySet().stream().sorted().collect(Collectors.toSet());
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
 			System.out.println("번호\t댓글\t작성자\t작성시간");
 
@@ -156,6 +179,7 @@ public class Post {
 			String input = null;
 			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t0.종료");
 			try {
+				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 				input = br.readLine();
 			} catch (Exception e) {
 				e.printStackTrace();
