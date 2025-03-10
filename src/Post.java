@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -19,7 +20,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Post {
+public class Post implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private int postNum;
 	private String title;
 	private String content;
@@ -28,6 +31,7 @@ public class Post {
 	private LocalDateTime updateDate;
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
+	private static int postCounter = 1; // 게시글 번호 증가
 
 	public Post(int postNum, String title, String content, String author) {
 		this.postNum = postNum;
@@ -59,7 +63,7 @@ public class Post {
 	}
 
 	public void commentPrint() {
-		//순서가 없는 Set을 Treeset으로 순서대로 정렬
+		// 순서가 없는 Set을 Treeset으로 순서대로 정렬
 		Set<Integer> set = new TreeSet<Integer>(this.commentsMap.keySet());
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
 		System.out.println("번호\t댓글\t작성자\t작성시간");
@@ -73,9 +77,9 @@ public class Post {
 		}
 	}
 
-	public void reverseCommentPrint() {	//최신순
-		//Set은 순서가 없어서 List로 받아주고 최신순 정렬
-		List<Integer>list = new ArrayList<Integer>(this.commentsMap.keySet());
+	public void reverseCommentPrint() { // 최신순
+		// Set은 순서가 없어서 List로 받아주고 최신순 정렬
+		List<Integer> list = new ArrayList<Integer>(this.commentsMap.keySet());
 		list.sort(Comparator.reverseOrder());
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
 		System.out.println("번호\t댓글\t작성자\t작성시간");
@@ -88,6 +92,7 @@ public class Post {
 			System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
 		}
 	}
+
 	// 댓글 수정
 	public void editComment() {
 		Set<Integer> set = commentsMap.keySet();
@@ -308,6 +313,15 @@ public class Post {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+
+	public static void setPostCounter(int count) {
+		Post.postCounter = postCounter;
+
+	}
+
+	public static int getNextPostNum() {
+		return postCounter++;
 	}
 
 }
