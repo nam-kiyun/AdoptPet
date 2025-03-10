@@ -2,11 +2,10 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class User  implements Serializable{
+public abstract class User implements Serializable {
     private String userId;
     private String password;
     private String nickName;
-    protected Map<String, Client> clientsMap;
     // 직렬화 버전을 고정
     // TODO: 직렬화 버전을 고정하는 이유를 아직 잘 모르겠음. 추후에 공부하고 추가할 것.
     private static final long serialVersionUID = 1L;
@@ -18,12 +17,14 @@ public abstract class User  implements Serializable{
     public static Map<String, User> getUserMap() {
         return userMap;
     }
+
     //User 생성자
     public User(String userId, String password, String nickName) {
         this.userId = userId;
         this.password = password;
         this.nickName = nickName;
     }
+
     // 데이터 저장 메서드 (직렬화)
     public static void save() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(path))) {
@@ -56,89 +57,71 @@ public abstract class User  implements Serializable{
             e.printStackTrace();
         }
     }
-    // 로그인 메서드
-    public static void login(String userId, String password) {
+
+    // 로그인 메서드 개선
+    public  void login(String userId, String password) {
         System.out.println("로그인 시도: " + userId);
-        // userMap이 null인지 먼저 확인
         if (userMap == null || userMap.isEmpty()) {
             System.out.println("현재 등록된 사용자가 없습니다. 회원가입을 먼저 해주세요.");
             return;
         }
-        // userMap에 userId가 존재하는지 확인
+        User user = userMap.get(userId);
         if (!userMap.containsKey(userId)) {
             System.out.println("존재하지 않는 아이디입니다.");
-            return;
         }
-        // userMap.get(userId)가 null인지 다시 확인
-        User user = userMap.get(userId);
-        if (user == null) {
-            System.out.println("사용자 정보를 찾을 수 없습니다.");
-            return;
-        }
-        //비밀번호가 null인지 확인
-        if (user.getPassword() == null) {
-            System.out.println("비밀번호가 null입니다.");
-            return;
-        }
-        // 비밀번호가 일치하는지 확인
+
         if (!user.getPassword().equals(password)) {
             System.out.println("비밀번호가 일치하지 않습니다.");
-            return;
         }
-
         System.out.println("로그인 성공!");
 
-        // Admin 또는 Client에 따른 메뉴 실행
-        if (user instanceof Admin) {
-            ((Admin) user).menu();
-        } else if (user instanceof Client) {
-            ((Client) user).menu();
-        }
-    }
+        user.menu();
 
+
+    }
 
     // 프로그램 실행시 시행될 데이터 로드
-        public static void initialize () {
-            load();
-            System.out.println("사용자 데이터를 불러왔습니다.");
-            // 기본 Admin 계정 생성
-            System.out.println("기본 Admin 계정을 확인.");
+    public static void initialize() {
+        load();
+        System.out.println("사용자 데이터를 불러왔습니다.");
+        // 기본 Admin 계정 생성
+        System.out.println("기본 Admin 계정을 확인.");
 
-            if (!userMap.containsKey("admin")) {
-                Admin defaultAdmin = new Admin("admin", "admin123", "관리자");
-                userMap.put("admin", defaultAdmin);
-                save();
-                // 테스트 하기 위해 계정 생성 메시지 출력
-                System.out.println("기본 Admin 계정이 생성되었습니다. (ID: admin, PW: admin123)");
-            } else {
-                System.out.println("기본 Admin 계정이 이미 존재합니다.");
+        if (!userMap.containsKey("admin")) {
+            Admin defaultAdmin = new Admin("admin", "admin123", "관리자");
+            userMap.put("admin", defaultAdmin);
+            save();
+            // 테스트 하기 위해 계정 생성 메시지 출력
+            System.out.println("기본 Admin 계정이 생성되었습니다. (ID: admin, PW: admin123)");
+        } else {
+            System.out.println("기본 Admin 계정이 이미 존재합니다.");
 
-            }
-        }
-
-        public abstract void menu ();
-
-        public String getUserId () {
-            return userId;
-        }
-
-        public void setUserId (String userId){
-            this.userId = userId;
-        }
-
-        public String getPassword () {
-            return password;
-        }
-
-        public void setPassword (String password){
-            this.password = password;
-        }
-
-        public String getNickName () {
-            return nickName;
-        }
-
-        public void setNickName (String nickName){
-            this.nickName = nickName;
         }
     }
+
+    public abstract void menu();
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+}
