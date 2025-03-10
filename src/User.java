@@ -56,17 +56,19 @@ public abstract class User implements Serializable {
 		}
 
 		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-			Object obj = in.readObject();
-			if (obj instanceof HashMap) {
-				userMap = (HashMap<String, User>) obj;
-				System.out.println("사용자 데이터 로드 완료! 현재 등록된 계정 수: " + userMap.size());
-			} else {
-				System.out.println("저장된 데이터가 올바르지 않습니다.");
-			}
+//			Object obj = in.readObject();
+
+			HashMap<String, User> map = (HashMap)in.readObject();
+			userMap.putAll(map);
+			
+			System.out.println("사용자 데이터 로드 완료! 현재 등록된 계정 수: " + userMap.size());
+
 		} catch (Exception e) {
 			System.err.println("데이터 로드 중 오류 발생!");
 			e.printStackTrace();
 		}
+		
+		
 	}
 
 	//
@@ -104,13 +106,12 @@ public abstract class User implements Serializable {
 			}
 			return;
 		}
-		
-		this.userId= userId;
+
+		this.userId = userId;
 		System.out.println("현재 로그인 아이디 : " + user.getUserId());
 		if (this.userId != null) {
 			user.menu();
-		} 
-		
+		}
 
 	}
 
