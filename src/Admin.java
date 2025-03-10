@@ -48,7 +48,10 @@ public class Admin extends User implements Serializable {
 
         for (Map.Entry<String, User> entry : userMap.entrySet()) {
             System.out.println("아이디: " + entry.getKey() +
-                    ", 닉네임: " + (entry.getValue().getNickName() != null ? entry.getValue().getNickName() : "N/A"));
+                    ", 닉네임: " + (entry.getValue().getNickName() != null ? entry.getValue().getNickName() : "N/A")
+                    +" \t 비밀번호잘못 입력된 회수 : "+entry.getValue().getWrongCount()+"\t 밴남은 시간 : "
+                    +(entry.getValue().getBanDateTime()!=null ? entry.getValue().getBanDateTime() : "정지중이 아닙니다.") 
+                    	);
         }
     }
 
@@ -59,6 +62,7 @@ public class Admin extends User implements Serializable {
             System.out.println("1. 전체 사용자 목록 보기");
             System.out.println("2. 사용자 검색");
             System.out.println("3. 사용자 삭제");
+            System.out.println("4. 로그아웃");
             System.out.println("0. 종료");
             System.out.print("선택 >> ");
             Scanner scanner = new Scanner(System.in);
@@ -75,13 +79,16 @@ public class Admin extends User implements Serializable {
                     searchUser(searchId);
                     break;
                 case 3:
-                    System.out.print("🗑 삭제할 아이디 입력: ");
+                    System.out.print("삭제할 아이디 입력: ");
                     String deleteId = scanner.nextLine();
                     deleteUser(deleteId);
                     break;
+                case 4:
+                	logout();
+                	return;
                 case 0:
                     System.out.println("종료 되었습니다.");
-                    return;
+                    System.exit(0);
                 default:
                     System.out.println("잘못된 입력입니다. 다시 선택하세요.");
             }
