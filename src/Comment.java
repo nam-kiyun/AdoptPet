@@ -2,7 +2,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class Comment implements Serializable {
-	private static int commentNum=1;
+	private static int commentCounter=1;
+	private int commentNum;
 	private String content;
 	private String author;
 	private String userId;
@@ -12,7 +13,7 @@ public class Comment implements Serializable {
 	
 	public Comment(int commentNum,String content, String author, LocalDateTime createAt, LocalDateTime editAt) {
 		super();
-		this.commentNum = commentNum;
+		this.commentNum=commentNum;
 		this.content = content;
 		this.author = author;
 		this.userId = Client.getNowUserId();
@@ -26,12 +27,20 @@ public class Comment implements Serializable {
 				+ createAt + ", editAt=" + editAt + "]";
 	}
 
-	public static int getCommentNum() {
-		return commentNum++;
+	public static int getNextCommentNum() {
+		return commentCounter++;
 	}
+	public static void setCommentCounter(int commentCounter) {
+		Comment.commentCounter=commentCounter;
+	}
+	public int getCommentNum() {
+		return commentNum;
+	}
+
 	public void setCommentNum(int commentNum) {
-		Comment.commentNum = commentNum;
+		this.commentNum = commentNum;
 	}
+
 	public String getContent() {
 		return content;
 	}
