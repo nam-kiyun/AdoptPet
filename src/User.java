@@ -104,8 +104,24 @@ public abstract class User implements Serializable {
 			}
 			return;
 		}
-		user.menu();
+		
+		this.userId= userId;
+		System.out.println("현재 로그인 아이디 : " + user.getUserId());
+		if (this.userId != null) {
+			user.menu();
+		} 
+		
 
+	}
+
+	public void logout() {
+		System.out.println(this.userId);
+		if (this.userId != null) {
+			System.out.println(getUserId() + "님이 로그 아웃하였습니다.");
+			this.userId = null;
+		} else {
+			System.out.println("잘못된 접근입니다.");
+		}
 	}
 
 	// 프로그램 실행시 시행될 데이터 로드
