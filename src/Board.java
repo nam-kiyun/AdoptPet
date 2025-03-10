@@ -142,11 +142,25 @@ public class Board {
 				author = generateAnonymousAuthor(); // 익명 작성자로 변경
 			}
 
-			System.out.print("제목: ");
-			String title = br.readLine();
+			String title;
+			while (true) {
+				System.out.println("제목 (2자 이상 작성해주세요.)");
+				title = br.readLine().trim();
 
-			System.out.print("내용: ");
-			String content = br.readLine();
+				if (title.length() >= 2)
+					break;
+				System.out.println("제목은 최소 2자 이상 입력해야 합니다.");
+			}
+
+			String content;
+			while (true) {
+				System.out.println("내용 (10자 이상 작성해주세요.)");
+				content = br.readLine().trim();
+
+				if (content.length() >= 10)
+					break;
+				System.out.println("내용은 최소 10자 이상 입력해야 합니다.");
+			}
 
 			int postNum = postsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
 
