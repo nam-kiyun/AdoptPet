@@ -62,6 +62,7 @@ public class Admin extends User implements Serializable {
             System.out.println("1. 전체 사용자 목록 보기");
             System.out.println("2. 사용자 검색");
             System.out.println("3. 사용자 삭제");
+            System.out.println("4. 로그아웃");
             System.out.println("0. 종료");
             System.out.print("선택 >> ");
             Scanner scanner = new Scanner(System.in);
@@ -82,9 +83,12 @@ public class Admin extends User implements Serializable {
                     String deleteId = scanner.nextLine();
                     deleteUser(deleteId);
                     break;
+                case 4:
+                	logout();
+                	return;
                 case 0:
                     System.out.println("종료 되었습니다.");
-                    return;
+                    System.exit(0);
                 default:
                     System.out.println("잘못된 입력입니다. 다시 선택하세요.");
             }
