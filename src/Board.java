@@ -18,7 +18,6 @@ public class Board {
 	private int boardNum; // 게시판번호
 	private String boardName; // 게시판제목
 	private String boardPath; // 경로
-	private int postCounter = 1; // 게시글 번호 증가
 	private HashMap<Integer, Post> postsMap; // 게시글 관리
 	private transient BufferedReader br = new BufferedReader(new InputStreamReader(System.in)); // 직렬화 대상에서 제외
 
@@ -85,8 +84,8 @@ public class Board {
 		System.out.println("========================= 게시글 목록 =========================");
 
 		for (Post post : postMap.values()) {
-			System.out
-					.println("번호: " + post.getPostNum() + " | 제목: " + post.getTitle() + " | 작성자: " + post.getAuthor());
+			System.out.println("번호: " + post.getPostNum() + " | 제목: " + post.getTitle() + " | 내용: " + post.getContent()
+					+ " | 작성자: " + post.getAuthor());
 		}
 
 		System.out.println("=============================================================");
@@ -127,7 +126,7 @@ public class Board {
 			System.out.print("내용: ");
 			String content = br.readLine();
 
-			int postNum = postCounter++;
+			int postNum = Post.getNextPostNum();
 			Post post = new Post(postNum, title, content, author);
 
 			postsMap.put(postNum, post);
@@ -182,17 +181,18 @@ public class Board {
 			Set<Integer> set = this.postsMap.keySet().stream().sorted().collect(Collectors.toSet());
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
 
-			System.out.println("번호\t제목\t작성자\t작성시간\t내용");
+//			System.out.println("번호\t제목\t작성자\t작성시간\t내용");
+//
+//			for (Integer number : set) {
+//				int postNum = this.postsMap.get(number).getPostNum();
+//				String title = this.postsMap.get(number).getTitle();
+//				String author = this.postsMap.get(number).getAuthor();
+//				String createAt = this.postsMap.get(number).getCreateAt().format(dtf);
+//				String content = this.postsMap.get(number).getContent();
+//
+//				System.out.printf("%d\t%s\t%s\t%s\t%s\n", postNum, title, author, createAt, content);
+//			}
 
-			for (Integer number : set) {
-				int postNum = this.postsMap.get(number).getPostNum();
-				String title = this.postsMap.get(number).getTitle();
-				String author = this.postsMap.get(number).getAuthor();
-				String createAt = this.postsMap.get(number).getCreateAt().format(dtf);
-				String content = this.postsMap.get(number).getContent();
-
-				//System.out.printf("%d\t%s\t%s\t%s\n", postNum, title, author, createAt);
-			}
 			ois.close();
 			fis.close();
 		} catch (Exception e) {
@@ -225,8 +225,6 @@ public class Board {
 			System.out.print("내용: ");
 			post.setContent(br.readLine());
 
-//			post.setUpdateDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-
 			savePosts();
 			System.out.println("게시글이 수정되었습니다.");
 		} catch (IOException e) {
@@ -236,11 +234,11 @@ public class Board {
 
 	// 게시글 삭제
 	public void deletePost() {
-		// 게시글 목록을 먼저 출력-> 사용자가 삭제할 게시글 확인
+		// 게시글 목록 출력
 		listAllPosts();
 
 		try {
-			System.out.print(">몇 번 게시글을 삭제하시겠습니까? ");
+			System.out.print("> 삭제할 게시글 번호를 입력하세요: ");
 			int postNum = Integer.parseInt(br.readLine());
 
 			if (!postsMap.containsKey(postNum)) { // 존재하지 않으면
@@ -248,17 +246,14 @@ public class Board {
 				return;
 			}
 
-			Post post = postsMap.get(postNum);
-//			if (!post.getAuthor().equals(Client.getNowUserId())) {
-//				System.out.println("작성자만 게시글을 삭제할 수 있습니다.");
-//				return;
-//			}
 			postsMap.remove(postNum);
 
-			// 파일 삭제
-			File postFile = new File(boardPath + "\\post_" + postNum + ".txt");
-			postFile.delete();
+			savePosts();
 
+			System.out.println("게시글이 삭제되었습니다.");
+
+		} catch (NumberFormatException e) {
+			System.out.println("숫자를 입력해주세요.");
 		} catch (IOException e) {
 			System.out.println("입력 오류가 발생했습니다.");
 		}
@@ -393,14 +388,6 @@ public class Board {
 
 	public void setPostsMap(HashMap<Integer, Post> postsMap) {
 		this.postsMap = postsMap;
-	}
-
-	public int getPostCounter() {
-		return postCounter;
-	}
-
-	public void setPostCounter(int postCounter) {
-		this.postCounter = postCounter;
 	}
 
 }
