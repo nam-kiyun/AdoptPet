@@ -49,7 +49,7 @@ public abstract class User implements Serializable {
 
 	// 데이터 로드 메서드
 	public static void load() {
-		File file = new File("C:\\AdoptPet\\userList.txt");
+		File file = new File(path);
 		if (!file.exists()) {
 			System.out.println("기존 데이터가 없습니다. 새로운 파일을 생성합니다.");
 			return;
