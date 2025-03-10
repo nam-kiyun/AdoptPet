@@ -26,8 +26,6 @@ public class Post {
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
 
-
-
 	public Post(int postNum, String title, String content, String author) {
 		this.postNum = postNum;
 		this.title = title;
@@ -62,26 +60,39 @@ public class Post {
 		Set<Integer> set = commentsMap.keySet();
 		System.out.println("댓글 번호를 입력해주세요.");
 		int n = 0;
-		try {	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			n = Integer.parseInt(br.readLine());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		boolean edit = false;
 		for (Integer num : set) {
 			if (n == num) {
-				if (this.userId.equals(commentsMap.get(num).getUserId()))
-					System.out.println("댓글을 새로 입력해주세요");
-				try {
-					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-					commentsMap.get(num).setContent(br.readLine());
-				} catch (IOException e) {
-					e.printStackTrace();
+				Comment comment = commentsMap.get(num);
+				if (comment == null) {
+					System.out.println("해당 댓글이 존재하지 않습니다.");
 				}
-				System.out.println("댓글이 수정되었습니다.");
-			} else {
-				System.out.println("잘못된 댓글 번호를 입력하셨습니다.");
+				edit = true;
+//				System.out.println("현재 userId: " + this.userId);
+//	            System.out.println("댓글 userId: " + comment.getUserId());
+				if (this.userId != null && this.userId.equals(comment.getUserId())) {
+					System.out.println("댓글을 새로 입력해주세요");
+					try {
+						BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+						commentsMap.get(num).setContent(br.readLine());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					System.out.println("댓글이 수정되었습니다.");
+				} else {
+					System.out.println("수정 권한이 없습니다.");
+				}
 				break;
 			}
+		}
+		if (!edit) {
+			System.out.println("잘못된 댓글 번호를 입력했습니다.");
 		}
 	}
 
@@ -99,8 +110,8 @@ public class Post {
 			e.printStackTrace();
 		}
 		boolean delete = false;
-		//Iterator를 통해 순회 돌아서 일치할 경우 삭제
-		//그냥 Set상태로 for문 돌게 되면 Collection 오류 발생
+		// Iterator를 통해 순회 돌아서 일치할 경우 삭제
+		// 그냥 Set상태로 for문 돌게 되면 Collection 오류 발생
 		while (it.hasNext()) {
 			int num = it.next();
 			if (n == num) {
@@ -109,7 +120,7 @@ public class Post {
 				System.out.println("선택하신 댓글이 삭제되었습니다.");
 			}
 		}
-		if(!delete) {
+		if (!delete) {
 			System.out.println("잘못된 댓글 번호를 입력하였습니다.");
 		}
 	}
@@ -149,7 +160,6 @@ public class Post {
 			if (map != null) {
 				// 불러온 map데이터를 commnetsMap에 병합
 				this.commentsMap.putAll(map);
-//				this.commentsMap.stream().fil
 				// 가장 큰 commentNum을 찾아
 				int maxNum = map.keySet().stream().max(Integer::compareTo).orElse(0);
 				Comment.setCommentCounter(maxNum + 1);
