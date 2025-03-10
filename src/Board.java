@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,7 +16,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Board {
+public class Board implements Serializable{
 
 	private int boardNum; // 게시판번호
 	private String boardName; // 게시판제목
@@ -34,6 +35,7 @@ public class Board {
 
 	// 실행
 	public void run() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		while (true) {
 			System.out.println("\n [" + boardName + "]");
 
@@ -123,6 +125,7 @@ public class Board {
 
 	// 게시글 작성
 	public void writePost() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 현재 로그인한 아이디
 		// String author = Client.getNowUserId();
 
@@ -236,6 +239,9 @@ public class Board {
 			fis.close();
 		} catch (Exception e) {
 		}
+		finally {
+			this.br = new BufferedReader(new InputStreamReader(System.in));
+		}
 	}
 
 	// 게시글 수정
@@ -300,7 +306,7 @@ public class Board {
 
 	// 모든 게시글 출력
 	public void listAllPosts() {
-
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 게시글 목록 출력 함수(공통)
 		printPostList(postsMap);
 
