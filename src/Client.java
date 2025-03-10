@@ -94,7 +94,7 @@ public class Client extends User implements Serializable{
 				System.out.println("닉네임은 영문자 또는 한글로 시작해야 하며, 영문자, 한글, 숫자를 포함하고, 길이는 2~8자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
 			}
 		}
-		super.getUserMap().put(userId, new Client(userId, password, nickName));
+		super.getUserMap().put(userId, new Client(userId,  User.hashPassword(password), nickName));
 		System.out.println("계정이 성공적으로 생성되었습니다.");
 		save(); //회원가입 이후 파일저장
 
@@ -104,7 +104,7 @@ public class Client extends User implements Serializable{
 		String insertPassWord, changeNickName;
 
 		insertPassWord = getInput("회원정보 수정을 진행하려면 비밀번호를 입력해주세요: ");
-		if (verifyPassword(insertPassWord)) {
+		if (verifyPassword( User.hashPassword(insertPassWord))) {
 			// 현재 로그인된 아이디를 키값으로 해당 유저리스트 맵 벨류인 유저 객체의 패스워드를 겟 한 후 입력한 패스워드와 비교
 			while (true) {
 				String choice = getInput("변경할 정보를 선택해주세요(1.비밀번호, 2.닉네임): ");
@@ -112,7 +112,7 @@ public class Client extends User implements Serializable{
 				case "1":
 					while (true) {
 						String chpass = getInput("변경할 비밀번호를 입력해주세요: ");
-						if (isValidPassword(insertPassWord)) {// password 패턴 확인
+						if (isValidPassword(chpass)) {// password 패턴 확인
 							super.getUserMap().get(nowUserId).setPassword(chpass);
 							// 클라이언트 맵 키값으로 현재 로그인 아이디 값으로 밸류값으로 클라이언트 객체불러와 set로 패스워드 변경
 							System.out.println("비밀번호가 성공적으로 변경되었습니다.");
@@ -160,7 +160,7 @@ public class Client extends User implements Serializable{
 	public void deleteAccount() {
 		String insertPassWord = getInput("회원탈퇴를 진행하려면 비밀번호를 입력해주세요: ");// 비밀번호 입력받음
 
-		if (verifyPassword(insertPassWord)) {// 입력받은 비밀번호 로그인된 계정의 비밀번호와 일치하는지 확인
+		if (verifyPassword(User.hashPassword(insertPassWord))) {// 입력받은 비밀번호 로그인된 계정의 비밀번호와 일치하는지 확인
 			super.getUserMap().remove(nowUserId); // 해당 계정 map 에서 삭제
 			this.nowUserId = ""; // 현재 로그인된 계정이 삭제되므로 현재 로그인 id값 초기화
 			System.out.println("계정이 성공적으로 삭제되었습니다.");
