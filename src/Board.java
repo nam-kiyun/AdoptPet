@@ -8,8 +8,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -75,7 +77,6 @@ public class Board {
 
 	// 게시글 목록 출력 함수 (공통)
 	public void printPostList(HashMap<Integer, Post> postMap) {
-
 		if (postMap.isEmpty()) {
 			System.out.println("등록된 게시글이 없습니다.");
 			return;
@@ -84,12 +85,17 @@ public class Board {
 		System.out.println("========================= 게시글 목록 =========================");
 
 		for (Post post : postMap.values()) {
-			System.out.println("번호: " + post.getPostNum() + " | 제목: " + post.getTitle() + " | 내용: " + post.getContent()
+			// 내용 길이 제한 (15자 이상 10자까지만 출력 + "...")
+			String content = post.getContent();
+			if (content.length() > 15) {
+				content = content.substring(0, 10) + "..."; // 길이 제한 적용
+			}
+
+			System.out.println("번호: " + post.getPostNum() + " | 제목: " + post.getTitle() + " | 내용: " + content
 					+ " | 작성자: " + post.getAuthor());
 		}
 
 		System.out.println("=============================================================");
-
 	}
 
 	// 게시글 상세보기 (공통)
@@ -108,6 +114,13 @@ public class Board {
 		System.out.println("=============================================================");
 	}
 
+	// 익명 작성자 생성
+	private String generateAnonymousAuthor() {
+		Random random = new Random();
+		int randomNum = random.nextInt(900);
+		return "익명" + randomNum;
+	}
+
 	// 게시글 작성
 	public void writePost() {
 		// 현재 로그인한 아이디
@@ -120,13 +133,23 @@ public class Board {
 			System.out.println("로그인한 사용자만 게시글을 작성할 수 있습니다.");
 			return;
 		}
+
 		try {
+			System.out.println("익명으로 작성하시겠습니까? (y/n): ");
+			String choice = br.readLine().trim().toUpperCase(); // 대소문자 구분 없이
+
+			if (choice.equals("Y")) {
+				author = generateAnonymousAuthor(); // 익명 작성자로 변경
+			}
+
 			System.out.print("제목: ");
 			String title = br.readLine();
+
 			System.out.print("내용: ");
 			String content = br.readLine();
 
-			int postNum = Post.getNextPostNum();
+			int postNum = postsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
+
 			Post post = new Post(postNum, title, content, author);
 
 			postsMap.put(postNum, post);
@@ -134,7 +157,9 @@ public class Board {
 
 			System.out.println("게시글이 성공적으로 작성되었습니다.");
 		} catch (IOException e) {
+
 			System.out.println("게시글이 작성에 실패하였습니다.");
+			e.printStackTrace();
 		}
 	}
 
@@ -338,7 +363,7 @@ public class Board {
 				return;
 			}
 
-			printPostList(filteredPosts); // ✅ 검색된 게시글만 출력
+			printPostList(filteredPosts); // 검색된 게시글만 출력
 
 			System.out.print("자세히 볼 게시글의 번호를 입력해주세요. (취소하려면 0): ");
 			try {
@@ -349,7 +374,7 @@ public class Board {
 					return;
 				}
 
-				printPostDetail(postsMap.get(postNum)); // ✅ 상세보기 함수 활용
+				printPostDetail(postsMap.get(postNum));
 
 			} catch (NumberFormatException e) {
 				System.out.println("숫자를 입력해주세요.");
@@ -361,8 +386,30 @@ public class Board {
 	}
 
 	// 게시물 정렬 (최신순)
-	public void sortPost() {
-		List<Post> postList = new ArrayList<Post>(postsMap.values());
+	public void reversePrintPostList(HashMap<Integer, Post> postMap) {
+
+		if (postMap.isEmpty()) {
+			System.out.println("등록된 게시글이 없습니다.");
+			return;
+		}
+
+		List<Integer> list = new ArrayList<Integer>(postMap.keySet());
+		list.sort(Comparator.reverseOrder());
+
+		System.out.println("========================= 게시글 목록 =========================");
+
+		for (Post post : postMap.values()) {
+			// 내용 길이 제한 (15자 이상 10자까지만 출력 + "...")
+			String content = post.getContent();
+			if (content.length() > 15) {
+				content = content.substring(0, 10) + "..."; // 길이 제한 적용
+			}
+
+			System.out.println("번호: " + post.getPostNum() + " | 제목: " + post.getTitle() + " | 내용: " + content
+					+ " | 작성자: " + post.getAuthor());
+		}
+
+		System.out.println("=============================================================");
 
 	}
 
