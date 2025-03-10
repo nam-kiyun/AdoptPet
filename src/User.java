@@ -56,25 +56,24 @@ public abstract class User implements Serializable {
 		}
 
 		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-//			Object obj = in.readObject();
+			Object obj = in.readObject();
 
-			HashMap<String, User> map = (HashMap)in.readObject();
+			HashMap<String, User> map = (HashMap) obj;
 			userMap.putAll(map);
-			
+
 			System.out.println("사용자 데이터 로드 완료! 현재 등록된 계정 수: " + userMap.size());
 
 		} catch (Exception e) {
 			System.err.println("데이터 로드 중 오류 발생!");
 			e.printStackTrace();
 		}
-		
-		
+
 	}
 
 	//
 	public void login(String userId, String password) {
 		System.out.println("로그인 시도: " + userId);
-		if (userMap == null || userMap.isEmpty()) {
+		if (userMap.isEmpty()) {
 			System.out.println("현재 등록된 사용자가 없습니다. 회원가입을 먼저 해주세요.");
 			return;
 		}
@@ -94,11 +93,9 @@ public abstract class User implements Serializable {
 				user.setWrongCount(0);
 			}
 		}
-
-		if (!user.getPassword().equals(password)) {
+		if (!user.getPassword().equals(PasswordUtil.hashPassword(password))) {
 			user.setWrongCount(user.getWrongCount() + 1);
 			System.out.println("비밀번호가 일치하지 않습니다.");
-			System.out.println("비밀번호 틀린 횟수  : " + user.getWrongCount());
 			if (user.getWrongCount() >= 3) {
 				user.setBanDateTime(LocalDateTime.now());
 				System.out.println("비밀번호를 여러번 잘못 입력하셨습니다. 10분뒤에 다시 시도해 주세요");
@@ -133,7 +130,7 @@ public abstract class User implements Serializable {
 		System.out.println("기본 Admin 계정을 확인.");
 
 		if (!userMap.containsKey("admin")) {
-			Admin defaultAdmin = new Admin("admin", "admin123", "관리자");
+			Admin defaultAdmin = new Admin("admin", PasswordUtil.hashPassword("admin123"), "관리자");
 			defaultAdmin.setWrongCount(0);
 			userMap.put("admin", defaultAdmin);
 			save();
@@ -146,6 +143,10 @@ public abstract class User implements Serializable {
 	}
 
 	public abstract void menu();
+
+	public void setPassword(String password) {
+		this.password = PasswordUtil.hashPassword(password);
+	}
 
 	public int getWrongCount() {
 		return wrongCount;
@@ -173,10 +174,6 @@ public abstract class User implements Serializable {
 
 	public String getPassword() {
 		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 
 	public String getNickName() {
