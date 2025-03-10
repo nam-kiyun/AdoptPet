@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 public class Post implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -46,18 +47,52 @@ public class Post implements Serializable {
 
 	// 댓글 달기
 	public void writeComment() {
-		System.out.println("댓글을 입력하세요.");
 		String str = null;
+
+		boolean check = false;
+		System.out.println("댓글을 익명으로 작성하시겠습니까? (1.닉네임 작성 2.익명 작성) ");
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			str = br.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		if (str.equals("1")) {
+			check = true;
+		} else if (str.equals("2")) {
+			check = false;
+		} else {
+			System.out.println("잘못된 입력입니다.");
+			return;
+		}
+		System.out.println("댓글을 새로 입력해주세요 (1자 ~ 300자 입력 가능)");
+
+		Pattern pattern = Pattern.compile("^.{1,300}$"); // 🔹 1자 이상 300자 이하
+
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+			// 🔹 정규표현식으로 댓글 길이 검사
+			while (true) {
+				str = br.readLine();
+				if (pattern.matcher(str).matches()) {
+					break; // 유효한 입력이면 루프 종료
+				}
+				System.out.println("❌ 댓글은 1자 이상, 300자 이하로 입력해주세요.");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		// 가장 높은 commentNum을 찾아서 자동 증가
 		int newCommentNum = Comment.getNextCommentNum();
-		Comment comment = new Comment(newCommentNum, str, this.author, LocalDateTime.now(), LocalDateTime.now());
+		Comment comment = null;
+		if (check) {
+			comment = new Comment(newCommentNum, str, this.author, LocalDateTime.now(), LocalDateTime.now());
+		} else {
+
+			comment = new Comment(newCommentNum, str, "익명", LocalDateTime.now(), LocalDateTime.now());
+		}
 		commentsMap.put(newCommentNum, comment);
 		System.out.println("댓글이 작성되었습니다.");
 	}
@@ -116,8 +151,22 @@ public class Post implements Serializable {
 //	            System.out.println("댓글 userId: " + comment.getUserId());
 				if (this.userId != null && this.userId.equals(comment.getUserId())) {
 					System.out.println("댓글을 새로 입력해주세요");
+					System.out.println("댓글을 새로 입력해주세요 (1자 ~ 300자 입력 가능)");
+
+					String newContent = "";
+					Pattern pattern = Pattern.compile("^.{1,300}$"); // 🔹 1자 이상 300자 이하
+
 					try {
 						BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+						// 🔹 정규표현식으로 댓글 길이 검사
+						while (true) {
+							newContent = br.readLine();
+							if (pattern.matcher(newContent).matches()) {
+								break; // 유효한 입력이면 루프 종료
+							}
+							System.out.println("❌ 댓글은 1자 이상, 300자 이하로 입력해주세요.");
+						}
 						commentsMap.get(num).setContent(br.readLine());
 					} catch (IOException e) {
 						e.printStackTrace();
