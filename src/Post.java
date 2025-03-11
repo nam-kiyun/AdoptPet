@@ -68,16 +68,6 @@ public class Post implements Serializable {
 					System.out.println("잘못된 입력입니다.");
 				}
 			}
-			System.out.println("익명으로 작성하시겠습니까? (y/n): ");
-			str = br.readLine().toUpperCase();
-			if (str.equals("Y")) {
-				check = true;
-			} else if (str.equals("N")) {
-				check = false;
-			} else {
-				System.out.println("잘못된 입력입니다.");
-				return;
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
