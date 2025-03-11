@@ -151,6 +151,7 @@ public abstract class User implements Serializable {
 						Board selectedBoard = boardMap.get(selectedBoardName);
 						System.out.println("선택한 게시판: " + selectedBoardName);
 						selectedBoard.run();
+						return;
 						// 이제 selectedBoard를 사용하여 해당 게시판에 접근할 수 있음
 						// 예: selectedBoard.displayBoard() 또는 다른 메서드를 통해 게시판 작업을 처리}
 					}

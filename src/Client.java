@@ -12,7 +12,7 @@ public class Client extends User implements Serializable{
 	private static String nowUserId;// 현재 로그인된 Client의 id를 저장하는 변수
 	
 
-	private static String getInput(String message) {// String 값 입력받는 함수
+	public static String getInput(String message) {// String 값 입력받는 함수
 		System.out.print(message);
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
