@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public abstract class User implements Serializable {
 	private String userId;
@@ -25,9 +27,12 @@ public abstract class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 	// static으로 선언된 userMap은 프로그램 실행시 한번만 생성되고, 모든 객체가 공유한다.
 	private static Map<String, User> userMap = new HashMap<>();
+	protected static Map<String, Board> boardMap = new LinkedHashMap<>();
 	// 파일경로지정 static 함으로써 객체 생성없이 사용가능
+	public static final String defaultpath = "C:\\AdoptPet"; // 저장할 파일 경로
 	public static final String path = "C:\\AdoptPet\\userList.txt"; // 저장할 파일 경로
-
+	public static final String board_list_path = "C:\\AdoptPet\\boardList.txt"; // 저장할 파일 경로
+	
 	public static Map<String, User> getUserMap() {
 		return userMap;
 	}
@@ -59,8 +64,18 @@ public abstract class User implements Serializable {
 		}
 	}
 
-	// 데이터 로드 메서드
+	// 유저 데이터 로드 메서드
 	public static void load() {
+		File directory = new File(defaultpath); //데이터 로드 시 기본 폴더 생성
+	    if (!directory.exists()) {
+	        if (directory.mkdirs()) {
+	            System.out.println("폴더가 존재하지 않아 생성되었습니다: " + directory.getAbsolutePath());
+	        } else {
+	            System.err.println("폴더 생성 실패: " + directory.getAbsolutePath());
+	            return;
+	        }
+	    }
+		
 		File file = new File(path);
 		if (!file.exists()) {
 			System.out.println("기존 데이터가 없습니다. 새로운 파일을 생성합니다.");
@@ -80,6 +95,71 @@ public abstract class User implements Serializable {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public static void boardLoad() { //board list load
+		
+		File file = new File(board_list_path);
+		if (!file.exists()) {
+
+			return;
+		}
+
+		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+			boardMap = (Map<String, Board>) in.readObject();
+
+			System.out.println("보드 데이터 로드 완료! 현재 등록된 보드 수: " + boardMap.size());
+
+		} catch (Exception e) {
+			System.err.println("보드 데이터 로드 중 오류 발생!");
+			e.printStackTrace();
+		}
+
+	}
+	public static void boardSave() {//board list save
+		try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(board_list_path))) {
+			out.writeObject(boardMap);
+		} catch (IOException e) {
+			System.err.println("데이터 저장 중 오류 발생!");
+			e.printStackTrace();
+		}
+	}
+	
+	public static void selectBoardList() { // 게시판 목록 조회
+		Scanner scanner = new Scanner(System.in);
+		if (boardMap.isEmpty()) {
+			System.out.println("현재 등록된 게시판이 없습니다.");
+		} else {
+			int index = 1;
+			System.out.println("======================================");
+			// boardMap의 key(게시판 제목)들을 출력
+			for (String boardName : boardMap.keySet()) {
+				System.out.println(index++ + ". " + boardName); // 게시판 제목 출력
+			}
+			System.out.println("======================================");
+
+			while (true) {
+				System.out.print("게시판을 선택해주세요(0.뒤로가기): ");
+				int selectedNumber = scanner.nextInt();
+				// 입력 받은 번호가 유효한지 체크
+				if (selectedNumber != 0) {
+					if (selectedNumber < 0 || selectedNumber > boardMap.size()) {
+						System.out.println("잘못된 번호입니다. 다시 시도하세요.");
+					} else {
+						// 선택된 번호에 해당하는 게시판 찾기
+						String selectedBoardName = (String) boardMap.keySet().toArray()[selectedNumber - 1];
+						Board selectedBoard = boardMap.get(selectedBoardName);
+						System.out.println("선택한 게시판: " + selectedBoardName);
+						selectedBoard.run();
+						return;
+						// 이제 selectedBoard를 사용하여 해당 게시판에 접근할 수 있음
+						// 예: selectedBoard.displayBoard() 또는 다른 메서드를 통해 게시판 작업을 처리}
+					}
+				} else {
+					return;
+				}
+			}
+		}
 	}
 
 	//
@@ -129,7 +209,7 @@ public abstract class User implements Serializable {
 	public void logout() {
 		System.out.println(this.userId);
 		if (this.userId != null) {
-			System.out.println(getUserId() + "님이 로그 아웃하였습니다.");
+			System.out.println(getUserId() + "님이 로그아웃하였습니다.");
 			this.userId = null;
 		} else {
 			System.out.println("잘못된 접근입니다.");
@@ -155,6 +235,35 @@ public abstract class User implements Serializable {
 
 		}
 	}
+	public static void initializeBoard() {
+	    boardLoad(); // 기존의 board 데이터 불러오기
+
+	    // 게시판 이름 배열
+	    String[] boardNames = {"고양이 입양 게시판", "강아지 입양 게시판", "자유 게시판"};
+	    
+	    // 게시판 초기화 및 폴더 생성
+	    for (String boardName : boardNames) {
+	        String boardPath = defaultpath + "\\" + boardName; // 각 게시판에 맞는 경로 설정
+	        
+	        // 폴더가 없다면 폴더 생성
+	        File boardFolder = new File(boardPath);
+	        if (!boardFolder.exists()) {
+	            boardFolder.mkdirs();  // 폴더 생성
+	            System.out.println(boardName + " 폴더를 생성했습니다.");
+	        }
+
+	        // 게시판이 없으면 새로 추가
+	        if (!boardMap.containsKey(boardName)) {
+	            boardMap.put(boardName, new Board(boardName, boardPath));
+	            System.out.println(boardName + " 게시판을 초기화했습니다.");
+	        }
+	    }
+	    boardSave();
+
+	    System.out.println("보드 데이터를 불러왔습니다.");
+	}
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													
+	
 
 	public abstract void menu();
 
