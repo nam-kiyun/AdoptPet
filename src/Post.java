@@ -28,19 +28,19 @@ public class Post implements Serializable {
 	private String title;
 	private String content;
 	private String author;
+	private String postPath;
 	private LocalDateTime createAt;
-	private LocalDateTime updateDate;
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
 	private static int postCounter = 1; // 게시글 번호 증가
 
-	public Post(int postNum, String title, String content, String author) {
+	public Post(int postNum, String boardPath, String title, String content, String author) {
 		this.postNum = postNum;
 		this.title = title;
 		this.content = content;
 		this.author = author;
+		this.postPath = boardPath + "\\" + title;
 		this.createAt = LocalDateTime.now();
-		this.updateDate = LocalDateTime.now();
 		this.userId = Client.getNowUserId();
 		this.commentsMap = new HashMap<Integer, Comment>();
 	}
@@ -50,14 +50,14 @@ public class Post implements Serializable {
 		String str = null;
 
 		boolean check = false;
-		System.out.println("댓글을 익명으로 작성하시겠습니까? (1.닉네임 작성 2.익명 작성) ");
+		System.out.println("익명으로 작성하시겠습니까? (y/n): ");
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			str = br.readLine();
-			if (str.equals("1")) {
-				check = false;
-			} else if (str.equals("2")) {
+			str = br.readLine().toUpperCase();
+			if (str.equals("Y")) {
 				check = true;
+			} else if (str.equals("N")) {
+				check = false;
 			} else {
 				System.out.println("잘못된 입력입니다.");
 				return;
@@ -65,10 +65,10 @@ public class Post implements Serializable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println("댓글을 새로 입력해주세요 (1자 ~ 300자 입력 가능)");
 
-		Pattern pattern = Pattern.compile("^.{1,300}$"); // 🔹 1자 이상 300자 이하
+		System.out.println("댓글을 새로 입력해주세요 (1자 ~ 50자 입력 가능)");
+
+		Pattern pattern = Pattern.compile("^.{1,50}$"); // 1자 이상 50자 이하
 
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -79,7 +79,7 @@ public class Post implements Serializable {
 				if (pattern.matcher(str).matches()) {
 					break; // 유효한 입력이면 루프 종료
 				}
-				System.out.println("❌ 댓글은 1자 이상, 300자 이하로 입력해주세요.");
+				System.out.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -88,7 +88,7 @@ public class Post implements Serializable {
 		// 가장 높은 commentNum을 찾아서 자동 증가
 		int newCommentNum = Comment.getNextCommentNum();
 		String author = check ? "익명" : this.author;
-		Comment comment = new Comment(newCommentNum, str, author, LocalDateTime.now(), LocalDateTime.now());
+		Comment comment = new Comment(newCommentNum, str, author, LocalDateTime.now());
 		commentsMap.put(newCommentNum, comment);
 		System.out.println("댓글이 작성되었습니다.");
 	}
@@ -147,10 +147,10 @@ public class Post implements Serializable {
 //	            System.out.println("댓글 userId: " + comment.getUserId());
 				if (this.userId != null && this.userId.equals(comment.getUserId())) {
 					System.out.println("댓글을 새로 입력해주세요");
-					System.out.println("댓글을 새로 입력해주세요 (1자 ~ 300자 입력 가능)");
+					System.out.println("댓글을 새로 입력해주세요 (1자 ~ 50자 입력 가능)");
 
 					String newContent = "";
-					Pattern pattern = Pattern.compile("^.{1,300}$"); // 🔹 1자 이상 300자 이하
+					Pattern pattern = Pattern.compile("^.{1,50}$"); // 1자 이상 50자 이하
 
 					try {
 						BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -161,7 +161,7 @@ public class Post implements Serializable {
 							if (pattern.matcher(newContent).matches()) {
 								break; // 유효한 입력이면 루프 종료
 							}
-							System.out.println("❌ 댓글은 1자 이상, 300자 이하로 입력해주세요.");
+							System.out.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
 						}
 						commentsMap.get(num).setContent(br.readLine());
 					} catch (IOException e) {
@@ -189,7 +189,6 @@ public class Post implements Serializable {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			n = Integer.parseInt(br.readLine());
 		} catch (NumberFormatException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		boolean delete = false;
@@ -215,14 +214,18 @@ public class Post implements Serializable {
 	}
 
 	public void commentSave() {
-		String path = "C:\\AdoptPet\\cat\\Post1\\Comments.txt";
+		File dir = new File(this.postPath);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		File file = new File(this.postPath + "\\Comments.txt");
 
 		FileOutputStream fos = null;
 		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null;
 
 		try {
-			fos = new FileOutputStream(new File(path));
+			fos = new FileOutputStream(file);
 			bos = new BufferedOutputStream(fos);
 			oos = new ObjectOutputStream(bos);
 
@@ -237,11 +240,11 @@ public class Post implements Serializable {
 	}
 
 	public void commentLoad() {
-		String path = "C:\\AdoptPet\\cat\\Comments.txt";
-		File file = new File(path);
-
+		File commentsFile = new File(this.postPath + "\\Comments.txt");
+		if (!commentsFile.exists())
+			return;
 		try {
-			FileInputStream fis = new FileInputStream(file);
+			FileInputStream fis = new FileInputStream(commentsFile);
 			BufferedInputStream bis = new BufferedInputStream(fis);
 			ObjectInputStream ois = new ObjectInputStream(bis);
 
@@ -252,13 +255,12 @@ public class Post implements Serializable {
 				// 가장 큰 commentNum을 찾아
 				int maxNum = map.keySet().stream().max(Integer::compareTo).orElse(0);
 				Comment.setCommentCounter(maxNum + 1);
-			}
-			commentPrint();
+				commentPrint();
+			} 
 			ois.close();
 			bis.close();
 			fis.close();
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 	}
 
@@ -334,14 +336,6 @@ public class Post implements Serializable {
 
 	public void setCreateAt(LocalDateTime createAt) {
 		this.createAt = createAt;
-	}
-
-	public LocalDateTime getUpdateDate() {
-		return updateDate;
-	}
-
-	public void setUpdateDate(LocalDateTime updateDate) {
-		this.updateDate = updateDate;
 	}
 
 	public Map<Integer, Comment> getCommentsMap() {
