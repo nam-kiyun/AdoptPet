@@ -77,20 +77,13 @@ public abstract class User implements Serializable {
 			return;
 		}
 
-		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
+		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+			Object obj = in.readObject();
 
-			try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(sb.toString().getBytes()))) {
-				Object obj = in.readObject();
-				if (obj instanceof HashMap) {
-					userMap = (HashMap<String, User>) obj;
-				}
-				System.out.println("사용자 데이터 로드 완료! 현재 등록된 계정 수: " + userMap.size());
-			}
+			HashMap<String, User> map = (HashMap) obj;
+			userMap.putAll(map);
+
+			System.out.println("사용자 데이터 로드 완료! 현재 등록된 계정 수: " + userMap.size());
 		} catch (Exception e) {
 			System.err.println("데이터 로드 중 오류 발생!");
 			e.printStackTrace();
@@ -106,19 +99,10 @@ public abstract class User implements Serializable {
 			return;
 		}
 
-		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
-			try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(sb.toString().getBytes()))) {
-				Object obj = in.readObject();
-				if (obj instanceof LinkedHashMap) {
-					boardMap = (LinkedHashMap<String, Board>) obj;
-				}
-				System.out.println("보드 데이터 로드 완료! 현재 등록된 보드 수: " + boardMap.size());
-			}
+		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+			boardMap = (Map<String, Board>) in.readObject();
+
+			System.out.println("보드 데이터 로드 완료! 현재 등록된 보드 수: " + boardMap.size());
 		} catch (Exception e) {
 			System.err.println("보드 데이터 로드 중 오류 발생!");
 			e.printStackTrace();
