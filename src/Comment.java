@@ -8,23 +8,16 @@ public class Comment implements Serializable {
 	private String author;
 	private String userId;
 	private LocalDateTime createAt;
-	private LocalDateTime editAt;
 	
 	
-	public Comment(int commentNum,String content, String author, LocalDateTime createAt, LocalDateTime editAt) {
+	
+	public Comment(int commentNum,String content, String author, LocalDateTime createAt) {
 		super();
 		this.commentNum=commentNum;
 		this.content = content;
 		this.author = author;
 		this.userId = Client.getNowUserId();
 		this.createAt = createAt;
-		this.editAt = editAt;
-	}
-
-	@Override
-	public String toString() {
-		return "Comment [CommentNum=" + commentNum + ", content=" + content + ", author=" + author + ", createAt="
-				+ createAt + ", editAt=" + editAt + "]";
 	}
 
 	public static int getNextCommentNum() {
@@ -67,14 +60,5 @@ public class Comment implements Serializable {
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-
-	public LocalDateTime getEditAt() {
-		return editAt;
-	}
-
-	public void setEditAt(LocalDateTime editAt) {
-		this.editAt = editAt;
-	}
-	
 	
 }
