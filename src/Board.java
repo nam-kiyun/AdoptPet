@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,6 +33,7 @@ public class Board implements Serializable{
 	public void run() {
 		loadPost();
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		
 		while (true) {
 			System.out.println("\n [" + boardName + "]");
 
@@ -114,7 +114,9 @@ public class Board implements Serializable{
 	      System.out.println("작성일: " + post.getCreateAt());
 	      System.out.println("내용: " + post.getContent());
 	      System.out.println("=============================================================");
-
+	      post.commentRun();
+	      
+	      
 	      // 게시판이 "고양이" "강아지" 입양 신청 여부
 	      if (boardName.contains("고양이") || (boardName.contains("강아지"))) {
 	         System.out.println("\n입양 신청을 원하시면 (1)을 입력하세요. 취소하려면(0)을 입력하세요.");
@@ -138,16 +140,13 @@ public class Board implements Serializable{
 	      }
 	   }
 
+
 	// 게시글 작성
 	public void writePost() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		// 현재 로그인한 아이디
-		// String author = Client.getNowUserId();
+		String author = Client.getUserMap().get(Client.getNowUserId()).getNickName();
 
-		// 테스트 유저
-		String author = "test";
 		boolean check = false;
-
 		if (author == null) {
 			System.out.println("로그인한 사용자만 게시글을 작성할 수 있습니다.");
 			return;
@@ -210,13 +209,13 @@ public class Board implements Serializable{
 	// 게시글 파일에 저장(직렬화)
 	private void savePosts() {
 
-		String path = boardPath + "\\posts.txt";
+		File file = new File(boardPath + "\\posts.txt");
 
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
 
 		try {
-			fos = new FileOutputStream(new File(path));
+			fos = new FileOutputStream(file);
 			oos = new ObjectOutputStream(fos);
 
 			oos.writeObject(postsMap);
@@ -232,8 +231,7 @@ public class Board implements Serializable{
 
 	// 저장된 게시글 불러오기
 	private void loadPost() {
-		String path = boardPath + "\\posts.txt";
-		File file = new File(path);
+		File file = new File(boardPath + "\\post.txt");
 
 		try {
 			FileInputStream fis = new FileInputStream(file);
@@ -273,7 +271,8 @@ public class Board implements Serializable{
 	public void editPost() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 모든 게시글 출력
-		listAllPosts();
+		if(postsMap.size()!=0) {
+		printPostList(postsMap);
 
 		try {
 			System.out.print(">몇 번 게시글을 수정하시겠습니까? ");
@@ -300,6 +299,9 @@ public class Board implements Serializable{
 			System.out.println("게시글이 수정되었습니다.");
 		} catch (IOException e) {
 			System.out.println("입력 오류가 발생했습니다.");
+		}}else {
+			System.out.println("등록된 게시글이 없습니다.");
+			return;
 		}
 	}
 
@@ -307,8 +309,8 @@ public class Board implements Serializable{
 	public void deletePost() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 게시글 목록 출력
-		listAllPosts();
-
+		printPostList(postsMap);
+		if(postsMap.size()!=0) {
 		try {
 			System.out.print("> 삭제할 게시글 번호를 입력하세요: ");
 			int postNum = Integer.parseInt(br.readLine());
@@ -329,12 +331,16 @@ public class Board implements Serializable{
 		} catch (IOException e) {
 			System.out.println("입력 오류가 발생했습니다.");
 		}
+	}else {
+		System.out.println("등록된 게시글이 없습니다. ");
 	}
+		}
 
 	// 모든 게시글 출력
 	public void listAllPosts() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 게시글 목록 출력 함수(공통)
+		if(postsMap.size()!=0) {
 		printPostList(postsMap);
 
 //		if (postsMap.isEmpty()) {
@@ -367,6 +373,7 @@ public class Board implements Serializable{
 				Post post = postsMap.get(postNum);
 
 				printPostDetail(post);
+//				commentRun();
 
 //				System.out.println("======================== 게시글 상세보기 ========================");
 //				System.out.println("번호: " + post.getPostNum());
@@ -384,6 +391,10 @@ public class Board implements Serializable{
 			System.out.println("숫자를 입력해주세요.");
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		}else {
+			System.out.println("등록된 게시글이 없습니다.");
+			return;
 		}
 
 	}
