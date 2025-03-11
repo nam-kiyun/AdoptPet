@@ -4,10 +4,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -256,7 +258,7 @@ public class Post implements Serializable {
 				int maxNum = map.keySet().stream().max(Integer::compareTo).orElse(0);
 				Comment.setCommentCounter(maxNum + 1);
 				commentPrint();
-			} 
+			}
 			ois.close();
 			bis.close();
 			fis.close();
@@ -295,6 +297,62 @@ public class Post implements Serializable {
 				commentSave();
 				return;
 			}
+		}
+	}
+
+	// 게시글 및 댓글 개별 파일 저장
+	public void saveAllPosts() {
+		String path = "C:\\AdoptPet\\download\\";
+		File directory = new File(path);
+
+		// 폴더 없으면 생성
+		if (!directory.exists()) {
+			if (directory.mkdir()) {
+				System.out.println("폴더 생성 완료: " + directory);
+			} else {
+				System.out.println("폴더 생성 실패");
+				return;
+			}
+		}
+
+		String filePath = path + "post_" + postNum + ".txt";
+
+		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+			writer.println("==================================================");
+			writer.println("                    📌 게시글                     ");
+			writer.println("==================================================");
+			writer.printf("📌 번호   : %d%n", postNum);
+			writer.printf("📌 제목   : %s%n", title);
+			writer.printf("📌 작성자 : %s%n", author);
+			writer.printf("📌 작성일 : %s%n", createAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+			writer.println("--------------------------------------------------");
+			writer.println("📜 내용:");
+			writer.println(content);
+			writer.println("--------------------------------------------------");
+
+			if (commentsMap.isEmpty()) {
+				writer.println("💬 댓글: 등록된 댓글이 없습니다.");
+			} else {
+				writer.println("\n==================================================");
+				writer.println("                   💬 댓글 목록                   ");
+				writer.println("==================================================");
+
+				for (Comment comment : commentsMap.values()) {
+					writer.println("--------------------------------------------------");
+					writer.printf("💬 번호   : %d%n", comment.getCommentNum());
+					writer.printf("💬 작성자 : %s%n", comment.getAuthor());
+					writer.printf("💬 작성일 : %s%n",
+							comment.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+					writer.println("💬 내용:");
+					writer.println(comment.getContent());
+					writer.println("--------------------------------------------------");
+				}
+			}
+
+			// System.out.println("✅ 게시글과 댓글이 저장되었습니다: " + filePath);
+		} catch (IOException e) {
+			System.out.println("파일 저장 중 오류가 발생했습니다.");
+			e.printStackTrace();
 		}
 	}
 
