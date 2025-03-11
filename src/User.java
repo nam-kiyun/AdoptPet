@@ -22,6 +22,7 @@ public abstract class User implements Serializable {
 	private String nickName;
 	private int wrongCount;
 	private LocalDateTime banTime;
+	private static String nowUserId;
 	// 직렬화 버전을 고정
 	// TODO: 직렬화 버전을 고정하는 이유를 아직 잘 모르겠음. 추후에 공부하고 추가할 것.
 	private static final long serialVersionUID = 1L;
@@ -127,6 +128,7 @@ public abstract class User implements Serializable {
 	
 	public static void selectBoardList() { // 게시판 목록 조회
 		Scanner scanner = new Scanner(System.in);
+		
 		if (boardMap.isEmpty()) {
 			System.out.println("현재 등록된 게시판이 없습니다.");
 		} else {
@@ -199,7 +201,8 @@ public abstract class User implements Serializable {
 		}
 
 		this.userId = userId;
-		System.out.println("현재 로그인 아이디 : " + user.getUserId());
+		nowUserId=this.userId;
+		System.out.println("현재 로그인 아이디 : " + userId);
 		if (this.userId != null) {
 			user.menu();
 		}
@@ -306,4 +309,16 @@ public abstract class User implements Serializable {
 	public void setNickName(String nickName) {
 		this.nickName = nickName;
 	}
+	
+	public void setNowUserId() { // 현재 로그인 id 정보 설정, 로그인 이후 직접 실행해야 함
+		nowUserId = userId;
+	}
+
+	public static String getNowUserId() { // 현재 로그인 id 리턴
+		return nowUserId;
+	}
+	public static void setUserMap(Map<String, User> userMap) {
+		User.userMap = userMap;
+	}
+	
 }
