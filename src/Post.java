@@ -54,17 +54,18 @@ public class Post implements Serializable {
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			str = br.readLine();
+			if (str.equals("1")) {
+				check = false;
+			} else if (str.equals("2")) {
+				check = true;
+			} else {
+				System.out.println("잘못된 입력입니다.");
+				return;
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (str.equals("1")) {
-			check = true;
-		} else if (str.equals("2")) {
-			check = false;
-		} else {
-			System.out.println("잘못된 입력입니다.");
-			return;
-		}
+		
 		System.out.println("댓글을 새로 입력해주세요 (1자 ~ 300자 입력 가능)");
 
 		Pattern pattern = Pattern.compile("^.{1,300}$"); // 🔹 1자 이상 300자 이하
@@ -72,7 +73,7 @@ public class Post implements Serializable {
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-			// 🔹 정규표현식으로 댓글 길이 검사
+			// 정규표현식으로 댓글 길이 검사
 			while (true) {
 				str = br.readLine();
 				if (pattern.matcher(str).matches()) {
@@ -86,13 +87,8 @@ public class Post implements Serializable {
 
 		// 가장 높은 commentNum을 찾아서 자동 증가
 		int newCommentNum = Comment.getNextCommentNum();
-		Comment comment = null;
-		if (check) {
-			comment = new Comment(newCommentNum, str, this.author, LocalDateTime.now(), LocalDateTime.now());
-		} else {
-
-			comment = new Comment(newCommentNum, str, "익명", LocalDateTime.now(), LocalDateTime.now());
-		}
+		String author = check ? "익명" : this.author;
+		Comment comment = new Comment(newCommentNum, str, author, LocalDateTime.now(), LocalDateTime.now());
 		commentsMap.put(newCommentNum, comment);
 		System.out.println("댓글이 작성되었습니다.");
 	}
@@ -219,7 +215,7 @@ public class Post implements Serializable {
 	}
 
 	public void commentSave() {
-		String path = "C:\\AdoptPet\\cat\\Comments.txt";
+		String path = "C:\\AdoptPet\\cat\\Post1\\Comments.txt";
 
 		FileOutputStream fos = null;
 		BufferedOutputStream bos = null;
