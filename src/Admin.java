@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class Admin extends User implements Serializable {
     private static final long serialVersionUID = 1L;
-
+   
     public Admin(String userId, String password, String nickName) {
         // setUserId, setPassword, setNickName 메서드를 사용해도 되지만, 부모 클래스의 생성자를 호출하는 것이 더 좋다.
         /*
@@ -23,7 +23,7 @@ public class Admin extends User implements Serializable {
             System.out.println("아이디: " + user.getUserId() + ", 닉네임: " +
                     (user.getNickName() != null ? user.getNickName() : "N/A"));
         } else {
-            System.out.println("등록된 사용자가 없십니다");
+            System.out.println("등록된 사용자가 없습니다");
         }
     }
 
@@ -40,20 +40,26 @@ public class Admin extends User implements Serializable {
 
     public void showUsersList() {
         Map<String, User> userMap = User.getUserMap();
-        System.out.println("전체 사용자 목록:");
+        System.out.println("\n======================== [전체 사용자 목록] ========================");
 
         if (userMap.isEmpty()) {
             System.out.println("등록된 사용자가 없습니다.");
             return;
         }
+        System.out.printf("%-15s | %-15s | %-10s | %-20s%n", "아이디", "닉네임", "비번 오류 횟수", "밴 남은 시간");
+        System.out.println("---------------------------------------------------------------------");
 
         for (Map.Entry<String, User> entry : userMap.entrySet()) {
-            System.out.println("아이디: " + entry.getKey() +
-                    ", 닉네임: " + (entry.getValue().getNickName() != null ? entry.getValue().getNickName() : "N/A")
-                    +" \t 비밀번호잘못 입력된 회수 : "+entry.getValue().getWrongCount()+"\t 밴남은 시간 : "
-                    +(entry.getValue().getBanDateTime()!=null ? entry.getValue().getBanDateTime() : "정지중이 아닙니다.") 
-                    	);
+            String userId = entry.getKey();
+            User user = entry.getValue();
+            String nickName = (user.getNickName() != null) ? user.getNickName() : "N/A";
+            int wrongCount = user.getWrongCount();
+            String banTime = (user.getBanDateTime() != null) ? user.getBanDateTime().toString() : "정지중이 아닙니다.";
+
+            System.out.printf("%-18s | %-18s | %-14d | %-20s%n", userId, nickName, wrongCount, banTime);
         }
+
+        System.out.println("=====================================================================");
     }
     
 	private void createBoard() {
@@ -61,36 +67,41 @@ public class Admin extends User implements Serializable {
 			Scanner scanner = new Scanner(System.in);
 
 			// Prompt the admin for the board name
-			System.out.print("새로운 게시판의 이름을 입력하세요: ");
+			System.out.print("새로운 게시판의 이름을 입력하세요(한글 및 영문자 2~15): ");
 			String boardName = scanner.nextLine();
+			if (boardName.matches("^[a-zA-Z가-힣][a-zA-Z가-힣0-9 ]{1,14}$")) {//게시판 제목 패턴 확인 
+				System.out.println("게시판 이름은 2~15자이며, 한글 또는 영어로 시작해야 합니다. (숫자와 공백은 허용, 특수문자는 불가)");
+			} else {
 
-			// Check if the board already exists
-			if (boardMap.containsKey(boardName)) {
-				System.out.println("이름이 이미 사용 중인 게시판이 있습니다.");
+				// Check if the board already exists
 
-			}
+				if (boardMap.containsKey(boardName)) {//패턴 맞을 경우 중복확인
+					System.out.println("이름이 이미 사용 중인 게시판이 있습니다.");
 
-			else {
-				// 게시판 폴더 경로 설정
-	            File boardDirectory = new File(defaultpath +"\\"+ boardName);
-	            
-	            // 해당 폴더가 존재하지 않으면 새 폴더 생성
-	            if (!boardDirectory.exists()) {
-	                if (boardDirectory.mkdirs()) { // 디렉터리 생성
-	                    System.out.println("게시판에 필요한 폴더가 생성되었습니다: " + boardDirectory.getAbsolutePath());
-	                } else {
-	                    System.err.println("폴더 생성 실패: " + boardDirectory.getAbsolutePath());
-	                    return;
-	                }
-	            }
-	            Board newBoard = new Board(boardName, defaultpath +"//"+ boardName); 
-	            boardMap.put(boardName, newBoard);
+				}
 
-				System.out.println("새로운 게시판이 성공적으로 생성되었습니다.");
-				// Optionally save the updated boardMap
+				else {
+					// 게시판 폴더 경로 설정
+					File boardDirectory = new File(defaultpath + "\\" + boardName);
 
-				boardSave();
-				return;
+					// 해당 폴더가 존재하지 않으면 새 폴더 생성
+					if (!boardDirectory.exists()) {
+						if (boardDirectory.mkdirs()) { // 디렉터리 생성
+							System.out.println("게시판에 필요한 폴더가 생성되었습니다: " + boardDirectory.getAbsolutePath());
+						} else {
+							System.err.println("폴더 생성 실패: " + boardDirectory.getAbsolutePath());
+							return;
+						}
+					}
+					Board newBoard = new Board(boardName, defaultpath + "//" + boardName);
+					boardMap.put(boardName, newBoard);
+
+					System.out.println("새로운 게시판이 성공적으로 생성되었습니다.");
+					// Optionally save the updated boardMap
+
+					boardSave();
+					return;
+				}
 			}
 		}
 
@@ -155,7 +166,8 @@ public class Admin extends User implements Serializable {
 
     @Override
     public void menu() {
-        while (true) {
+   	setNowUserId();
+    	while (true) {
             System.out.println("\n======== [Admin 메뉴] ========");
             System.out.println("1. 전체 사용자 목록 보기");
             System.out.println("2. 사용자 검색");
@@ -163,12 +175,13 @@ public class Admin extends User implements Serializable {
             System.out.println("4. 로그아웃");
             System.out.println("5. 게시판 추가");
             System.out.println("6. 게시판 삭제");
+            System.out.println("7. 게시판 목록 보기");
             System.out.println("0. 종료");
             System.out.print("선택 >> ");
             Scanner scanner = new Scanner(System.in);
             int choice = scanner.nextInt();
             scanner.nextLine();
-
+            
             switch (choice) {
                 case 1:
                     showUsersList();
@@ -192,6 +205,9 @@ public class Admin extends User implements Serializable {
                 case 6:
                    deleteBoard();
                     break;
+                case 7:
+                	selectBoardList();
+                     break;
                 case 0:
                     System.out.println("종료 되었습니다.");
                     System.exit(0);
@@ -200,4 +216,6 @@ public class Admin extends User implements Serializable {
             }
         }
     }
+    
+
 }
