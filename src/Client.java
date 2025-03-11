@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Client extends User implements Serializable{
-
+	private static final long serialVersionUID = 1L;
 	
 	
 
