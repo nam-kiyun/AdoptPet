@@ -49,12 +49,26 @@ public class Post implements Serializable {
 
 	// 댓글 달기
 	public void writeComment() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String str = null;
 
 		boolean check = false;
-		System.out.println("익명으로 작성하시겠습니까? (y/n): ");
+		
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			while(true) {
+				System.out.println("익명으로 작성하시겠습니까? (y/n): ");
+				str = br.readLine().toUpperCase();
+				if (str.equals("Y")) {
+					check = true;
+					break;
+				} else if (str.equals("N")) {
+					check = false;
+					break;
+				} else {
+					System.out.println("잘못된 입력입니다.");
+				}
+			}
+			System.out.println("익명으로 작성하시겠습니까? (y/n): ");
 			str = br.readLine().toUpperCase();
 			if (str.equals("Y")) {
 				check = true;
@@ -73,8 +87,6 @@ public class Post implements Serializable {
 		Pattern pattern = Pattern.compile("^.{1,50}$"); // 1자 이상 50자 이하
 
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
 			// 정규표현식으로 댓글 길이 검사
 			while (true) {
 				str = br.readLine();
