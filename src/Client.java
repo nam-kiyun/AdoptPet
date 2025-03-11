@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public class Client extends User implements Serializable{
 
-	private static String nowUserId;// 현재 로그인된 Client의 id를 저장하는 변수
+	
 	
 
 	public static String getInput(String message) {// String 값 입력받는 함수
@@ -30,7 +30,7 @@ public class Client extends User implements Serializable{
 	}
 
 	private boolean verifyPassword(String insertPassword) { // 비밀번호 일치 확인 함수
-		return insertPassword.equals(super.getUserMap().get(nowUserId).getPassword());
+		return insertPassword.equals(super.getUserMap().get(super.getNowUserId()).getPassword());
 		// parameter로 받은 패스워드와 현재 아이디를 키값으로 value인 Clint 객체에 접근해 해당 패스워드를 get해서 equals로
 		// 비교
 	}
@@ -113,7 +113,7 @@ public class Client extends User implements Serializable{
 					while (true) {
 						String chpass = getInput("변경할 비밀번호를 입력해주세요: ");
 						if (isValidPassword(chpass)) {// password 패턴 확인
-							super.getUserMap().get(nowUserId).setPassword(chpass);
+							super.getUserMap().get(super.getNowUserId()).setPassword(chpass);
 							// 클라이언트 맵 키값으로 현재 로그인 아이디 값으로 밸류값으로 클라이언트 객체불러와 set로 패스워드 변경
 							System.out.println("비밀번호가 성공적으로 변경되었습니다.");
 							save();
@@ -133,7 +133,7 @@ public class Client extends User implements Serializable{
 							}
 
 							else {
-								super.getUserMap().get(nowUserId).setNickName(changeNickName); // 패턴과 중복체크 통과시 변경
+								super.getUserMap().get(super.getNowUserId()).setNickName(changeNickName); // 패턴과 중복체크 통과시 변경
 								System.out.println("닉네임을 성공적으로 변경했습니다.");
 								save();
 								break;
@@ -161,8 +161,8 @@ public class Client extends User implements Serializable{
 		String insertPassWord = getInput("회원탈퇴를 진행하려면 비밀번호를 입력해주세요: ");// 비밀번호 입력받음
 
 		if (verifyPassword(User.hashPassword(insertPassWord))) {// 입력받은 비밀번호 로그인된 계정의 비밀번호와 일치하는지 확인
-			super.getUserMap().remove(nowUserId); // 해당 계정 map 에서 삭제
-			this.nowUserId = ""; // 현재 로그인된 계정이 삭제되므로 현재 로그인 id값 초기화
+			super.getUserMap().remove(super.getNowUserId()); // 해당 계정 map 에서 삭제
+			super.setUserId(""); // 현재 로그인된 계정이 삭제되므로 현재 로그인 id값 초기화
 			System.out.println("계정이 성공적으로 삭제되었습니다.");
 			save();//회원정보 삭제 후 파일저장
 			// 초기 로그인 화면 호출
@@ -188,19 +188,16 @@ public class Client extends User implements Serializable{
 
 			switch (choice) {
 			case "1":
-				this.setNowUserId();
 				super.selectBoardList();
 				break;
 			case "2":
-				this.setNowUserId();
 				this.editProfile();
 				break;
 			case "3":
-				this.setNowUserId();
 				this.deleteAccount();
 				return;
 			case "4":
-				this.logout();
+				super.logout();
 				return;
 
 			default:
@@ -251,12 +248,6 @@ public class Client extends User implements Serializable{
 		super(userId, password, nickName);
 	}
 
-	public void setNowUserId() { // 현재 로그인 id 정보 설정, 로그인 이후 직접 실행해야 함
-		nowUserId = super.getUserId();
-	}
-
-	public static String getNowUserId() { // 현재 로그인 id 리턴
-		return nowUserId;
-	}
+	
 
 }
