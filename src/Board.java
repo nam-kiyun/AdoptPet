@@ -154,18 +154,20 @@ public class Board implements Serializable {
 		}
 
 		try {
-			System.out.println("익명으로 작성하시겠습니까? (y/n): ");
-			String choice = br.readLine().toUpperCase(); // 대소문자 구분 없이
+			while(true) {
+				System.out.println("익명으로 작성하시겠습니까? (y/n): ");
+				String choice = br.readLine().toUpperCase(); // 대소문자 구분 없이
 
-			if (choice.equals("Y")) {
-				check = true; // 익명 작성자로 변경
-			} else if (choice.equals("N")) {
-				check = false;
-			} else {
-				System.out.println("잘못된 입력입니다.");
-				return;
+				if (choice.equals("Y")) {
+					check = true; // 익명 작성자로 변경
+					break;
+				} else if (choice.equals("N")) {
+					check = false;
+					break;
+				} else {
+					System.out.println("잘못된 입력입니다.");
+				}
 			}
-
 			String title;
 			while (true) {
 				System.out.println("제목 (2자 이상 작성해주세요.)");
@@ -228,7 +230,7 @@ public class Board implements Serializable {
 
 	// 저장된 게시글 불러오기
 	private void loadPost() {
-		File file = new File(boardPath + "\\post.txt");
+		File file = new File(boardPath + "\\posts.txt");
 
 		try {
 			FileInputStream fis = new FileInputStream(file);
@@ -303,6 +305,14 @@ public class Board implements Serializable {
 		}
 	}
 
+	public void deletePostDir(int postNum) {
+		File file = new File(boardName+"\\"+postsMap.get(postNum).getTitle());
+		if(file.exists()) {
+			file.delete();
+		} else {
+			return;
+		}
+	}
 	// 게시글 삭제
 	public void deletePost() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -317,11 +327,12 @@ public class Board implements Serializable {
 					System.out.println("해당 번호의 게시글이 존재하지 않습니다.");
 					return;
 				}
-
+				deletePostDir(postNum);
 				postsMap.remove(postNum);
-
+				
 				savePosts();
 
+				
 				System.out.println("게시글이 삭제되었습니다.");
 
 			} catch (NumberFormatException e) {
@@ -477,7 +488,7 @@ public class Board implements Serializable {
 	public void setBoardNum(int boardNum) {
 		this.boardNum = boardNum;
 	}
-
+ 
 	public String getBoardName() {
 		return boardName;
 	}
