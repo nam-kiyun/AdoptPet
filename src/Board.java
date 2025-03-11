@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,25 +16,25 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Board {
+public class Board implements Serializable{
 
 	private int boardNum; // 게시판번호
 	private String boardName; // 게시판제목
 	private String boardPath; // 경로
 	private HashMap<Integer, Post> postsMap; // 게시글 관리
-	private transient BufferedReader br = new BufferedReader(new InputStreamReader(System.in)); // 직렬화 대상에서 제외
+	
 
 	public Board(String boardName, String boardPath) {
 		this.boardName = boardName;
 		this.boardPath = boardPath;
 		this.postsMap = new HashMap<Integer, Post>();
-		this.br = new BufferedReader(new InputStreamReader(System.in));
 
 		loadPost();
 	}
 
 	// 실행
 	public void run() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		while (true) {
 			System.out.println("\n [" + boardName + "]");
 
@@ -99,20 +100,45 @@ public class Board {
 	}
 
 	// 게시글 상세보기 (공통)
-	private void printPostDetail(Post post) {
-		if (post == null) {
-			System.out.println("해당 게시글이 존재하지 않습니다.");
-			return;
-		}
+	
+	   private void printPostDetail(Post post) {
+		   BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	      if (post == null) {
+	         System.out.println("해당 게시글이 존재하지 않습니다.");
+	         return;
+	      }
 
-		System.out.println("======================== 게시글 상세보기 ========================");
-		System.out.println("번호: " + post.getPostNum());
-		System.out.println("제목: " + post.getTitle());
-		System.out.println("작성자: " + post.getAuthor());
-		System.out.println("작성일: " + post.getCreateAt());
-		System.out.println("내용: " + post.getContent());
-		System.out.println("=============================================================");
-	}
+	      System.out.println("======================== 게시글 상세보기 ========================");
+	      System.out.println("번호: " + post.getPostNum());
+	      System.out.println("제목: " + post.getTitle());
+	      System.out.println("작성자: " + post.getAuthor());
+	      System.out.println("작성일: " + post.getCreateAt());
+	      System.out.println("내용: " + post.getContent());
+	      System.out.println("=============================================================");
+
+	      // 게시판이 "고양이" "강아지" 입양 신청 여부
+	      if (boardName.contains("고양이") || (boardName.contains("강아지"))) {
+	         System.out.println("\n입양 신청을 원하시면 (1)을 입력하세요. 취소하려면(0)을 입력하세요.");
+	         System.out.println("선택: ");
+//	         System.out.println("입양 신청을 원하십니까? (예/아니요): ");
+
+	         try {
+	            int choice = Integer.parseInt(br.readLine().trim());
+
+	            if (choice == 1) {
+	               System.out.println("입양 신청이 완료되었습니다!");
+	               // 입양 신청 추가 기능 구현 해야함
+	            } else if (choice == 0) {
+	               System.out.println("입양 신청을 취소하였습니다.");
+	            } else {
+	               System.out.println("올바른 숫자를 입력해주세요.");
+	            }
+	         } catch (IOException | NumberFormatException e) {
+	            System.out.println("숫자를 입력해주세요.");
+	         }
+	      }
+	   }
+
 
 	// 익명 작성자 생성
 	private String generateAnonymousAuthor() {
@@ -123,6 +149,7 @@ public class Board {
 
 	// 게시글 작성
 	public void writePost() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 현재 로그인한 아이디
 		// String author = Client.getNowUserId();
 
@@ -236,10 +263,12 @@ public class Board {
 			fis.close();
 		} catch (Exception e) {
 		}
+		
 	}
 
 	// 게시글 수정
 	public void editPost() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 모든 게시글 출력
 		listAllPosts();
 
@@ -273,6 +302,7 @@ public class Board {
 
 	// 게시글 삭제
 	public void deletePost() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 게시글 목록 출력
 		listAllPosts();
 
@@ -300,7 +330,7 @@ public class Board {
 
 	// 모든 게시글 출력
 	public void listAllPosts() {
-
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 게시글 목록 출력 함수(공통)
 		printPostList(postsMap);
 
@@ -357,6 +387,7 @@ public class Board {
 
 	// 특정 게시물 검색 (제목으로)
 	public void searchPost() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		try {
 			System.out.println("제목명을 검색해주세요.");
 			System.out.print("검색: ");

@@ -12,7 +12,7 @@ public class Client extends User implements Serializable{
 	private static String nowUserId;// 현재 로그인된 Client의 id를 저장하는 변수
 	
 
-	private static String getInput(String message) {// String 값 입력받는 함수
+	public static String getInput(String message) {// String 값 입력받는 함수
 		System.out.print(message);
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -189,6 +189,7 @@ public class Client extends User implements Serializable{
 			switch (choice) {
 			case "1":
 				this.setNowUserId();
+				super.selectBoardList();
 				break;
 			case "2":
 				this.setNowUserId();
@@ -210,6 +211,10 @@ public class Client extends User implements Serializable{
 	}
 	
 	public static void run() {
+		Client.initialize();//초기 Admin 설정 및 파일 로드 
+		Client main = new Client("main"," main", "main"); //회원가입 및 로그인용 객체 생성 
+		Client.initializeBoard();
+		
 		while (true) {
 			System.out.println("======================================");
 			System.out.println("1.로그인");
@@ -218,8 +223,7 @@ public class Client extends User implements Serializable{
 			System.out.println("======================================");
 			String choice = getInput("원하시는 메뉴를 선택해주세요: ");
 			
-			Client.initialize();//초기 Admin 설정 및 파일 로드 
-			Client main = new Client("main"," main", "main"); //회원가입 및 로그인용 객체 생성 
+			
 			switch (choice) {
 			case "1"://로그인 함수 실행
 				main.login(getInput("아이디를 입력해주세요: "), getInput("비밀번호를 입력해주세요: "));
@@ -229,7 +233,7 @@ public class Client extends User implements Serializable{
 				break;
 			case "3"://종료 
 				System.out.println("프로그램을 종료합니다.");
-				main.save();
+				save();
 				return;
 
 			default:
