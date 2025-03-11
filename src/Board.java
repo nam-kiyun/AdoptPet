@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,12 +27,11 @@ public class Board implements Serializable{
 		this.boardName = boardName;
 		this.boardPath = boardPath;
 		this.postsMap = new HashMap<Integer, Post>();
-
-		loadPost();
 	}
 
 	// 실행
 	public void run() {
+		loadPost();
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		
 		while (true) {
@@ -148,6 +146,7 @@ public class Board implements Serializable{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String author = Client.getUserMap().get(Client.getNowUserId()).getNickName();
 
+		boolean check = false;
 		if (author == null) {
 			System.out.println("로그인한 사용자만 게시글을 작성할 수 있습니다.");
 			return;
@@ -155,26 +154,37 @@ public class Board implements Serializable{
 
 		try {
 			System.out.println("익명으로 작성하시겠습니까? (y/n): ");
-			String choice = br.readLine().trim().toUpperCase(); // 대소문자 구분 없이
+			String choice = br.readLine().toUpperCase(); // 대소문자 구분 없이
 
 			if (choice.equals("Y")) {
-				author = "익명"; // 익명 작성자로 변경
+				check = true; // 익명 작성자로 변경
+			} else if (choice.equals("N")) {
+				check = false;
+			} else {
+				System.out.println("잘못된 입력입니다.");
+				return;
 			}
 
 			String title;
 			while (true) {
 				System.out.println("제목 (2자 이상 작성해주세요.)");
-				title = br.readLine().trim();
+				title = br.readLine();
 
-				if (title.length() >= 2)
+				if (title.length() >= 2) {
+					File dir = new File(this.boardPath+"\\"+title);
+					if(!dir.exists()) {
+						dir.mkdirs();
+					}
 					break;
+				}
+				
 				System.out.println("제목은 최소 2자 이상 입력해야 합니다.");
 			}
 
 			String content;
 			while (true) {
 				System.out.println("내용 (10자 이상 작성해주세요.)");
-				content = br.readLine().trim();
+				content = br.readLine();
 
 				if (content.length() >= 10)
 					break;
@@ -182,8 +192,8 @@ public class Board implements Serializable{
 			}
 
 			int postNum = postsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
-
-			Post post = new Post(postNum, title, content, author);
+			author = check ? "익명" : author	;
+			Post post = new Post(postNum, this.boardPath ,title, content, author);
 
 			postsMap.put(postNum, post);
 			savePosts();
@@ -199,13 +209,13 @@ public class Board implements Serializable{
 	// 게시글 파일에 저장(직렬화)
 	private void savePosts() {
 
-		String path = boardPath + "\\post.txt";
+		File file = new File(boardPath + "\\posts.txt");
 
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
 
 		try {
-			fos = new FileOutputStream(new File(path));
+			fos = new FileOutputStream(file);
 			oos = new ObjectOutputStream(fos);
 
 			oos.writeObject(postsMap);
@@ -221,8 +231,7 @@ public class Board implements Serializable{
 
 	// 저장된 게시글 불러오기
 	private void loadPost() {
-		String path = boardPath + "\\post.txt";
-		File file = new File(path);
+		File file = new File(boardPath + "\\post.txt");
 
 		try {
 			FileInputStream fis = new FileInputStream(file);
