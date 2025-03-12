@@ -1,12 +1,10 @@
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
@@ -35,7 +33,7 @@ public class Post implements Serializable {
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
 	private static int postCounter = 1; // 게시글 번호 증가
-	private boolean adoptPetCheck; //입양완료 여부 체크
+	private boolean adoptPetCheck; // 입양완료 여부 체크
 
 	public Post(int postNum, String boardPath, String title, String content, String author) {
 		this.postNum = postNum;
@@ -47,66 +45,47 @@ public class Post implements Serializable {
 		this.userId = Client.getNowUserId();
 		this.commentsMap = new HashMap<Integer, Comment>();
 	}
-	
-	public static String getInput(String message) {// String 값 입력받는 함수
-		System.out.print(message);
-		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			return br.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "";
-		}
-	}
 
 	// 댓글 달기
 	public void writeComment() {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		String str = null;
 
 		boolean check = false;
-		
-		try {
-			while(true) {
-				System.out.println("익명으로 작성하시겠습니까? (y/n): ");
-				str = br.readLine().toUpperCase();
-				if (str.equals("Y")) {
-					check = true;
-					break;
-				} else if (str.equals("N")) {
-					check = false;
-					break;
-				} else {
-					System.out.println("잘못된 입력입니다.");
-				}
+
+		// 익명 여부 확인
+		while (true) {
+			String choice = Client.getInput("익명으로 작성하시겠습니까? (y/n): ").trim().toUpperCase();
+
+			if (choice.equals("Y")) {
+				check = true;
+				break;
+			} else if (choice.equals("N")) {
+				check = false;
+				break;
+			} else {
+				System.err.println("⚠ 잘못된 입력입니다. 'y' 또는 'n'을 입력해주세요.");
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 
-		System.out.println("댓글을 새로 입력해주세요 (1자 ~ 50자 입력 가능)");
+		// 댓글 입력 유효성 검사 (1자 ~ 50자)
+		Pattern pattern = Pattern.compile("^.{1,50}$");
+		String commentContent;
 
-		Pattern pattern = Pattern.compile("^.{1,50}$"); // 1자 이상 50자 이하
-
-		try {
-			// 정규표현식으로 댓글 길이 검사
-			while (true) {
-				str = br.readLine();
-				if (pattern.matcher(str).matches()) {
-					break; // 유효한 입력이면 루프 종료
-				}
-				System.out.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
+		while (true) {
+			commentContent = Client.getInput("💬 댓글을 입력해주세요 (1자 ~ 50자 가능): ").trim();
+			if (pattern.matcher(commentContent).matches()) {
+				break; // 유효한 입력이면 루프 종료
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
 		}
 
 		// 가장 높은 commentNum을 찾아서 자동 증가
-		int newCommentNum = Comment.getNextCommentNum();
+		int newCommentNum = commentsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
 		String author = check ? "익명" : this.author;
-		Comment comment = new Comment(newCommentNum, str, author, LocalDateTime.now());
+
+		// 댓글 객체 생성 및 저장
+		Comment comment = new Comment(newCommentNum, commentContent, author, LocalDateTime.now());
 		commentsMap.put(newCommentNum, comment);
-		System.out.println("댓글이 작성되었습니다.");
+		System.out.println("✅ 댓글이 작성되었습니다.");
 	}
 
 	public void commentPrint() {
@@ -141,83 +120,75 @@ public class Post implements Serializable {
 	}
 
 	// 댓글 수정
-	   public void editComment() {
-	      int n = 0;
-	      // 여기
-	      Set<Integer> set = commentsMap.keySet();
-	      while (true) {
-	         // 여기
-	         System.out.print("> 댓글 번호를 입력해주세요. ");
+	public void editComment() {
+		int n = 0;
+		Set<Integer> set = commentsMap.keySet();
+		while (true) {
+			try {
+				// 여기
+				n = Integer.parseInt(Client.getInput("> 댓글 번호를 입력해주세요: "));
 
-	         try {
-	            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	            n = Integer.parseInt(br.readLine());
-	         } catch (Exception e) {
-	            // 여기
-	            System.out.println(">댓글 번호는 숫자만 가능합니다!");
-	         }
+				if (n != 0)
+					break;
+			} catch (NumberFormatException e) {
+				System.out.println("⚠ 댓글 번호는 숫자만 가능합니다!");
+			}
+		}
 
-	         if (n != 0)
-	            break;
-	      }
-	      boolean edit = false;
-	      for (Integer num : set) {
-	         if (n == num) {
-	            Comment comment = commentsMap.get(num);
-	            if (comment == null) {
-	               System.out.println("해당 댓글이 존재하지 않습니다.");
-	            }
-	            edit = true;
+		boolean edit = false;
+		for (Integer num : set) {
+			if (n == num) {
+				Comment comment = commentsMap.get(num);
+				if (comment == null) {
+					System.out.println("해당 댓글이 존재하지 않습니다.");
+				}
+				edit = true;
 //	            System.out.println("현재 userId: " + this.userId);
 //	               System.out.println("댓글 userId: " + comment.getUserId());
-	            if (this.userId != null && this.userId.equals(comment.getUserId())) {
-	               System.out.println("댓글을 새로 입력해주세요 (1자 ~ 50자 입력 가능)");
+				if (this.userId != null && this.userId.equals(comment.getUserId())) {
+					System.out.println("댓글을 새로 입력해주세요 (1자 ~ 50자 입력 가능)");
 
-	               String newContent = "";
-	               Pattern pattern = Pattern.compile("^.{1,50}$"); // 1자 이상 50자 이하
+					String newContent = "";
+					Pattern pattern = Pattern.compile("^.{1,50}$"); // 1자 이상 50자 이하
 
-	               try {
-	                  BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+					while (true) {
+						newContent = Client.getInput("💬 수정할 댓글: ");
+						if (pattern.matcher(newContent).matches())
+							break;
+						System.out.println("⚠ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
+					}
 
-	                  // 🔹 정규표현식으로 댓글 길이 검사
-	                  while (true) {
-	                     newContent = br.readLine();
-	                     if (pattern.matcher(newContent).matches()) {
-	                        break; // 유효한 입력이면 루프 종료
-	                     }
-	                     System.out.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
-	                  }
-	                  commentsMap.get(num).setContent(newContent);
-	               } catch (IOException e) {
-	                  e.printStackTrace();
-	               }
-	               System.out.println("댓글이 수정되었습니다.");
-	               // 여기
-	               saveAllPosts();
-	            } else {
-	               System.out.println("수정 권한이 없습니다.");
-	            }
-	            break;
-	         }
-	      }
-	      if (!edit) {
-	         System.out.println("잘못된 댓글 번호를 입력했습니다.");
-	      }
-	   }
-
+					commentsMap.get(num).setContent(newContent);
+					System.out.println("✅ 댓글이 수정되었습니다.");
+					saveAllPosts(); // 변경 사항 저장
+				} else {
+					System.out.println("수정 권한이 없습니다.");
+				}
+				break;
+			}
+		}
+		if (!edit) {
+			System.out.println("잘못된 댓글 번호를 입력했습니다.");
+		}
+	}
 
 	// 댓글 삭제
 	public void deleteComment() {
 		Set<Integer> set = commentsMap.keySet();
 		Iterator<Integer> it = set.iterator();
 		System.out.println("댓글 번호를 입력해주세요.");
+
 		int n = 0;
-		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			n = Integer.parseInt(br.readLine());
-		} catch (NumberFormatException | IOException e) {
-			e.printStackTrace();
+		while (true) {
+			try {
+				n = Integer.parseInt(Client.getInput("> 댓글 번호를 입력해주세요: "));
+				if (n != 0)
+					break;
+			} catch (NumberFormatException e) {
+				System.out.println("⚠ 댓글 번호는 숫자만 가능합니다!");
+			}
 		}
+
 		boolean delete = false;
 		// Iterator를 통해 순회 돌아서 일치할 경우 삭제
 		// 그냥 Set상태로 for문 돌게 되면 Collection 오류 발생
@@ -294,15 +265,10 @@ public class Post implements Serializable {
 	public void commentRun() {
 		commentLoad();
 		while (true) {
-			String input = null;
 			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t4.정렬\t0.종료");
-			try {
-				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-				input = br.readLine();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			switch (input) {
+			String choice = Client.getInput("선택: ");
+
+			switch (choice) {
 			case "1":
 				writeComment();
 				commentPrint();
@@ -324,18 +290,15 @@ public class Post implements Serializable {
 			}
 		}
 	}
-	
+
 	public void adopPetcommentRun() {
 		commentLoad();
 		while (true) {
-			String input = null;
-			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t4.정렬\t5.입양 신청\t0.종료");
-			try {
-				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-				input = br.readLine();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			System.out.println("\n📌 입양 게시글 댓글 메뉴");
+			System.out.println("1. 댓글 작성\t2. 댓글 수정\t3. 댓글 삭제\t4. 정렬\t5. 입양 신청\t0. 종료");
+
+			String input = Client.getInput("선택: ").trim();
+
 			switch (input) {
 			case "1":
 				writeComment();
@@ -363,23 +326,25 @@ public class Post implements Serializable {
 	}
 
 	public void writeAdoptPet() {
-	    while (true) {
-	        String choice = getInput("입양을 신청하시려면 \'Y\'를 입력해주세요(Y. 신청, N. 취소): ");
-	        if (choice.toUpperCase().equals("Y")) {
-	        	Client.getUserMap().get(getUserId()).adoptPetMap().put(getPostNum() + "/" + Client.getNowUserId(),this.postPath.replace(this.getTitle(),"").replace(Client.defaultpath, "").replace("\\","")+"/입양승인요청");
-	        	System.out.println(Client.getUserMap().get(getUserId()).adoptPetMap().toString());
-	        	System.out.println(Client.getUserMap().get(getUserId()));
-	            User.getUserMap().get(getUserId()).setAlarm("1");
-	            System.out.println("입양 신청이 완료 되었습니다.");
-	            
-	            return;
-	        } else if (choice.toUpperCase().equals("N")) {
-	            System.out.println("입양 신청을 취소합니다.");
-	            return;
-	        } else {
-	            System.out.println("올바른 값을 입력해주세요(Y. 신청, N. 취소)");
-	        }
-	    }
+		while (true) {
+			String choice = Client.getInput("입양을 신청하시려면 \'Y\'를 입력해주세요(Y. 신청, N. 취소): ");
+			if (choice.toUpperCase().equals("Y")) {
+				Client.getUserMap().get(getUserId()).adoptPetMap().put(getPostNum() + "/" + Client.getNowUserId(),
+						this.postPath.replace(this.getTitle(), "").replace(Client.defaultpath, "").replace("\\", "")
+								+ "/입양승인요청");
+				System.out.println(Client.getUserMap().get(getUserId()).adoptPetMap().toString());
+				System.out.println(Client.getUserMap().get(getUserId()));
+				User.getUserMap().get(getUserId()).setAlarm("1");
+				System.out.println("입양 신청이 완료 되었습니다.");
+
+				return;
+			} else if (choice.toUpperCase().equals("N")) {
+				System.out.println("입양 신청을 취소합니다.");
+				return;
+			} else {
+				System.out.println("올바른 값을 입력해주세요(Y. 신청, N. 취소)");
+			}
+		}
 	}
 
 	// 게시글 및 댓글 개별 파일 저장
@@ -396,7 +361,7 @@ public class Post implements Serializable {
 				return;
 			}
 		}
-		
+
 		String filePath = path + "post_" + postNum + ".txt";
 
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
