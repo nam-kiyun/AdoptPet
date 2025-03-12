@@ -24,6 +24,7 @@ public class Client extends User implements Serializable{
 			return "";
 		}
 	}
+	
 
 	private boolean isValidId(String id) { // id 패턴 체크함수
 		final String ID_RULES = "^[A-Za-z](?=.*[A-Za-z])(?=.*\\d)[A-Za-z0-9]{7,14}$"; // 영문자로 시작, 영문자와 숫자가 포함된, 8~15길이,
@@ -253,12 +254,12 @@ public class Client extends User implements Serializable{
 
 	            String postNum = keyParts[0]; // 게시글 번호
 	            String userId = keyParts[1]; // 유저 아이디
-	            String postTitle = valueParts[0]; // 게시글 제목
+	            String boardTitle = valueParts[0]; // 게시글 게시판 이름
 	            String applicationStatus = valueParts[1]; // 신청 상태
 
 	            // 신청 상태가 "입양신청"인 경우에만 리스트에 추가
 	            if ("입양승인요청".equals(applicationStatus)) {
-	                list.add(new String[] { postNum, userId, postTitle, applicationStatus });
+	                list.add(new String[] { postNum, userId, boardTitle, applicationStatus });
 	            }
 	        }
 
@@ -266,7 +267,7 @@ public class Client extends User implements Serializable{
 	        if (!list.isEmpty()) {
 	            System.out.println("======================================");
 	            for (String[] data : list) {
-	                System.out.println(data[0] + "번 게시글 \"" + data[2] + "\"에서 " + data[1] + "님이 " + data[3] + "했습니다.");
+	                System.out.println(data[2] + "\"의 " +data[0] + "번 게시글 \"" + data[1] + "님이 " + data[3] + "했습니다.");
 	            }
 	            System.out.println("======================================");
 
@@ -317,12 +318,12 @@ public class Client extends User implements Serializable{
 
 	            String postNum = keyParts[0]; // 게시글 번호
 	            String userId = keyParts[1]; // 유저 아이디
-	            String postTitle = valueParts[0]; // 게시글 제목
+	            String boardTitle = valueParts[0]; // 게시글 게시판 제목
 	            String applicationStatus = valueParts[1]; // 신청 상태
 
 	            // 신청 상태가 "입양승인"인 경우에만 리스트에 추가
 	            if ("입양승인처리".equals(applicationStatus)) {
-	                list.add(new String[] { postNum, userId, postTitle, applicationStatus });
+	                list.add(new String[] { postNum, userId, boardTitle, applicationStatus });
 	            }
 	        }
 
@@ -330,7 +331,8 @@ public class Client extends User implements Serializable{
 	        if (!list.isEmpty()) {
 	            System.out.println("======================================");
 	            for (String[] data : list) {
-	                System.out.println(data[0] + "번 게시글 \"" + data[2] + "\"에서 " + data[1] + "님이 " + data[3] + "했습니다.");
+	                System.out.println(data[2]);
+	            	System.out.println(data[2] + "의 " +data[0] + "번 게시글 " +  data[1] + "님이 " + data[3] + "했습니다.");
 	            }
 	            System.out.println("======================================");
 
@@ -344,7 +346,7 @@ public class Client extends User implements Serializable{
 	                if (data[0].equals(selectedPostNum)) {
 	                    selectedIndex = i;  // 게시글 번호가 일치하는 인덱스를 찾음
 	                    break;  // 일치하는 게시글을 찾으면 루프 종료
-	                }
+	 }
 	            }
 
 	            if (selectedIndex == -1) {
@@ -354,6 +356,15 @@ public class Client extends User implements Serializable{
 	                String[] selectedData = list.get(selectedIndex);
 	                User.getUserMap().get(selectedData[1]).adoptPetMap().put(selectedData[0] + "/" + getNowUserId(), selectedData[2] + "/입양확정");
 	                System.out.println(selectedData[0] + "번 게시글의 입양이 확정되었습니다.");
+	                System.out.println(selectedData[2]);
+	                System.out.println(User.getBoardMap().get(selectedData[2]).toString());
+	                System.out.println(User.getBoardMap().get(selectedData[2]).getPostsMap());
+	                Post post = User.getBoardMap().get(selectedData[2]).getPostsMap().get(selectedData[0]);
+	                
+	                System.out.println(post.toString());
+	                post.setTitle("(입양완료)"+post.getTitle());
+	                post.setAdoptPetCheck(true);
+	                
 	            }
 	        } else {
 	            System.out.println("입양 확정 목록이 비어 있습니다.");

@@ -346,6 +346,10 @@ public abstract class User implements Serializable {
 	public void setAlarm(String alarm) {
 		this.alarm = alarm;
 	}
+	public static Map<String, Board> getBoardMap() {
+		return boardMap;
+	}
+	
 
 	
 }
