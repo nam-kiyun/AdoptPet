@@ -39,6 +39,7 @@ public class Board implements Serializable {
 
 	// 실행
 	public void run() {
+		savePosts();
 		loadPost();
 
 		while (true) {
@@ -100,7 +101,7 @@ public class Board implements Serializable {
 	}
 
 	// 게시글 상세보기 (공통)
-	private void printPostDetail(Post post) {
+	public void printPostDetail(Post post) {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		if (post == null) {
 			System.out.println("해당 게시글이 존재하지 않습니다.");
@@ -216,7 +217,6 @@ public class Board implements Serializable {
 
 	// 게시글 작성
 	public void writePost() {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String author = Client.getUserMap().get(Client.getNowUserId()).getNickName();
 
 		// 정규 표현식 패턴 (제목: 2자 이상, 내용: 10자 이상)
@@ -239,66 +239,59 @@ public class Board implements Serializable {
 			return;
 		}
 
-		try {
-			while (true) {
-				if (this.adminBoard)
-					continue;
-				System.out.println("익명으로 작성하시겠습니까? (y/n): ");
-				String choice = br.readLine().toUpperCase(); // 대소문자 구분 없이
+		while (true) {
+			if (this.adminBoard)
+				continue;
+			System.out.println("익명으로 작성하시겠습니까? (y/n): ");
+			String choice = Client.getInput("익명으로 작성하시겠습니까? (y/n): ").toUpperCase();
 
-				if (choice.equals("Y")) {
-					check = true; // 익명 작성자로 변경
-					break;
-				} else if (choice.equals("N")) {
-					check = false;
-					break;
-				} else {
-					System.out.println("잘못된 입력입니다.");
-				}
+			if (choice.equals("Y")) {
+				check = true; // 익명 작성자로 변경
+				break;
+			} else if (choice.equals("N")) {
+				check = false;
+				break;
+			} else {
+				System.out.println("잘못된 입력입니다.");
 			}
-			String title;
-			while (true) {
-				System.out.println("제목 (2자 이상 작성해주세요.)");
-				title = br.readLine();
-				if (titlePattern.matcher(title).matches()) {
-					break; // 유효한 입력이면 루프 종료
-				}
-				System.out.println("제목은 최소 2자 이상 입력해야 합니다.");
-			}
-
-			String content;
-			while (true) {
-				System.out.println("내용 (10자 이상 작성해주세요.)");
-				content = br.readLine();
-
-				if (contentPattern.matcher(content).matches()) {
-					break;
-				}
-				System.out.println("내용은 최소 10자 이상 입력해야 합니다.");
-			}
-
-			File dir = new File(this.boardPath + "\\" + title);
-			if (!dir.exists()) {
-				dir.mkdirs();
-			}
-			int postNum = postsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
-			author = check ? "익명" : author;
-			Post post = new Post(postNum, this.boardPath, title, content, author);
-
-			postsMap.put(postNum, post);
-			savePosts();
-			post.saveAllPosts();
-
-			System.out.println("게시글이 성공적으로 작성되었습니다.");
-		} catch (IOException e) {
-
-			System.out.println("게시글이 작성에 실패하였습니다.");
-			e.printStackTrace();
 		}
+		String title;
+		while (true) {
+			title = Client.getInput("제목을 입력해주세요 (2자 이상): ").trim();
+			if (titlePattern.matcher(title).matches()) {
+				break; // 유효한 입력이면 루프 종료
+			}
+			System.out.println("제목은 최소 2자 이상 입력해야 합니다.");
+		}
+
+		String content;
+		while (true) {
+			content = Client.getInput("내용을 입력해주세요 (10자 이상): ").trim();
+
+			if (contentPattern.matcher(content).matches())
+				break;
+
+			System.out.println("내용은 최소 10자 이상 입력해야 합니다.");
+		}
+
+		File dir = new File(this.boardPath + "\\" + title);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+
+		int postNum = postsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
+		author = check ? "익명" : author;
+		Post post = new Post(postNum, this.boardPath, title, content, author);
+
+		postsMap.put(postNum, post);
+		savePosts();
+		post.saveAllPosts();
+
+		System.out.println("게시글이 성공적으로 작성되었습니다.");
 	}
 
 	// 게시글 파일에 저장(직렬화)
-	private void savePosts() {
+	public void savePosts() {
 
 		File file = new File(boardPath + "\\posts.txt");
 
@@ -321,7 +314,7 @@ public class Board implements Serializable {
 	}
 
 	// 저장된 게시글 불러오기
-	private void loadPost() {
+	public void loadPost() {
 		File file = new File(boardPath + "\\posts.txt");
 
 		try {
@@ -348,7 +341,6 @@ public class Board implements Serializable {
 
 	// 게시글 수정
 	public void editPost() {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		if (this.adminBoard && !User.getNowUserId().equals("admin")) {
 			System.out.println("관리자 전용 게시판입니다. 접근 권한이 없습니다.");
 			return;
@@ -357,32 +349,24 @@ public class Board implements Serializable {
 		if (postsMap.size() != 0) {
 			printPostList(postsMap);
 
-			try {
-				System.out.print(">몇 번 게시글을 수정하시겠습니까? ");
-				int postNum = Integer.parseInt(br.readLine());
+			int postNum = Integer.parseInt(Client.getInput("> 몇 번 게시글을 수정하시겠습니까? "));
 
-				if (!postsMap.containsKey(postNum)) {
-					System.out.println("해당 게시글이 존재하지 않습니다.");
-					return;
-				}
-
-				Post post = postsMap.get(postNum);
-				if (!post.getUserId().equals(Client.getNowUserId())) {
-					System.out.println("작성자만 게시글을 수정할 수 있습니다.");
-					return;
-				}
-
-				System.out.print("제목: ");
-				post.setTitle(br.readLine());
-
-				System.out.print("내용: ");
-				post.setContent(br.readLine());
-
-				savePosts();
-				System.out.println("게시글이 수정되었습니다.");
-			} catch (IOException e) {
-				System.out.println("입력 오류가 발생했습니다.");
+			if (!postsMap.containsKey(postNum)) {
+				System.out.println("해당 게시글이 존재하지 않습니다.");
+				return;
 			}
+
+			Post post = postsMap.get(postNum);
+			if (!post.getUserId().equals(Client.getNowUserId())) {
+				System.out.println("작성자만 게시글을 수정할 수 있습니다.");
+				return;
+			}
+
+			post.setTitle(Client.getInput("새 제목: "));
+			post.setContent(Client.getInput("새 내용: "));
+
+			savePosts();
+			System.out.println("게시글이 수정되었습니다.");
 		} else {
 			System.out.println("등록된 게시글이 없습니다.");
 			return;
@@ -416,7 +400,6 @@ public class Board implements Serializable {
 
 	// 게시글 삭제
 	public void deletePost() {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		if (this.adminBoard && !User.getNowUserId().equals("admin")) {
 			System.out.println("관리자 전용 게시판입니다. 접근 권한이 없습니다.");
 			return;
@@ -425,8 +408,7 @@ public class Board implements Serializable {
 		printPostList(postsMap);
 		if (postsMap.size() != 0) {
 			try {
-				System.out.print("> 삭제할 게시글 번호를 입력하세요: ");
-				int postNum = Integer.parseInt(br.readLine());
+				int postNum = Integer.parseInt(Client.getInput("> 삭제할 게시글 번호를 입력하세요: "));
 
 				if (!postsMap.containsKey(postNum)) { // 존재하지 않으면
 					System.out.println("해당 번호의 게시글이 존재하지 않습니다.");
@@ -446,8 +428,6 @@ public class Board implements Serializable {
 
 			} catch (NumberFormatException e) {
 				System.out.println("숫자를 입력해주세요.");
-			} catch (IOException e) {
-				System.out.println("입력 오류가 발생했습니다.");
 			}
 		} else {
 			System.out.println("등록된 게시글이 없습니다. ");
@@ -456,7 +436,6 @@ public class Board implements Serializable {
 
 	// 모든 게시글 출력
 	public void listAllPosts() {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		// 게시글 목록 출력 함수(공통)
 		if (postsMap.size() != 0) {
 			printPostList(postsMap);
@@ -466,7 +445,7 @@ public class Board implements Serializable {
 			System.out.println("선택:");
 
 			try {
-				int postNum = Integer.parseInt(br.readLine());
+				int postNum = Integer.parseInt(Client.getInput("선택: "));
 
 				if (postNum == 0) {
 					System.out.println("게시글 상세보기를 취소했습니다.");
@@ -484,8 +463,6 @@ public class Board implements Serializable {
 
 			} catch (NumberFormatException e) {
 				System.out.println("숫자를 입력해주세요.");
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		} else {
 			System.out.println("등록된 게시글이 없습니다.");
@@ -496,46 +473,40 @@ public class Board implements Serializable {
 
 	// 특정 게시물 검색 (제목으로)
 	public void searchPost() {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		try {
-			System.out.println("제목명을 검색해주세요.");
-			System.out.print("검색: ");
-			String word = br.readLine().trim(); // 공백제거
+		System.out.println("제목명을 검색해주세요.");
+		System.out.print("검색: ");
+		String word = Client.getInput("제목명을 검색해주세요: ").trim();
 
-			HashMap<Integer, Post> filteredPosts = new HashMap<>();
+		HashMap<Integer, Post> filteredPosts = new HashMap<>();
 
-			System.out.println("===========================검색 목록===========================");
+		System.out.println("===========================검색 목록===========================");
 
-			for (Post post : postsMap.values()) {
-				if (post.getTitle().contains(word)) {
-					filteredPosts.put(post.getPostNum(), post);
-				}
+		for (Post post : postsMap.values()) {
+			if (post.getTitle().contains(word)) {
+				filteredPosts.put(post.getPostNum(), post);
 			}
+		}
 
-			if (filteredPosts.isEmpty()) {
-				System.out.println("해당 제목의 게시글이 존재하지 않습니다.");
+		if (filteredPosts.isEmpty()) {
+			System.out.println("해당 제목의 게시글이 존재하지 않습니다.");
+			return;
+		}
+
+		printPostList(filteredPosts); // 검색된 게시글만 출력
+
+		System.out.print("자세히 볼 게시글의 번호를 입력해주세요. (취소하려면 0): ");
+		try {
+			int postNum = Integer.parseInt(Client.getInput("자세히 볼 게시글의 번호를 입력해주세요. (취소하려면 0): "));
+
+			if (postNum == 0) {
+				System.out.println("게시글 상세보기를 취소했습니다.");
 				return;
 			}
 
-			printPostList(filteredPosts); // 검색된 게시글만 출력
+			printPostDetail(postsMap.get(postNum));
 
-			System.out.print("자세히 볼 게시글의 번호를 입력해주세요. (취소하려면 0): ");
-			try {
-				int postNum = Integer.parseInt(br.readLine());
-
-				if (postNum == 0) {
-					System.out.println("게시글 상세보기를 취소했습니다.");
-					return;
-				}
-
-				printPostDetail(postsMap.get(postNum));
-
-			} catch (NumberFormatException e) {
-				System.out.println("숫자를 입력해주세요.");
-			}
-
-		} catch (IOException e) {
-			System.out.println("입력 오류가 발생했습니다.");
+		} catch (NumberFormatException e) {
+			System.out.println("숫자를 입력해주세요.");
 		}
 	}
 

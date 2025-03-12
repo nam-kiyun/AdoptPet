@@ -1,7 +1,5 @@
 import javax.crypto.Cipher;
 
-
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -13,7 +11,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-
 public abstract class User implements Serializable {
 	private String userId;
 	private String password;
@@ -21,48 +18,42 @@ public abstract class User implements Serializable {
 	private int wrongCount;
 	private LocalDateTime banTime;
 	private static String nowUserId;
-	private String alarm; //알림 구현
+	private String alarm; // 알림 구현
 	// 직렬화 버전을 고정
 	// TODO: 직렬화 버전을 고정하는 이유를 아직 잘 모르겠음. 추후에 공부하고 추가할 것.
 	private static final long serialVersionUID = 1L;
 	// static으로 선언된 userMap은 프로그램 실행시 한번만 생성되고, 모든 객체가 공유한다.
 	private static Map<String, User> userMap = new HashMap<>();
 	protected static Map<String, Board> boardMap = new LinkedHashMap<>();
-	protected  Map<String, String> adoptPet;
+	protected Map<String, String> adoptPet;
 	// 파일경로지정 static 함으로써 객체 생성없이 사용가능
 	public static final String defaultpath = "C:\\AdoptPet"; // 저장할 파일 경로
 	public static final String path = "C:\\AdoptPet\\userList.txt"; // 저장할 파일 경로
 	public static final String board_list_path = "C:\\AdoptPet\\boardList.txt"; // 저장할 파일 경로
-	
+
 	public static Map<String, User> getUserMap() {
 		return userMap;
 	}
+
 	public Map<String, String> adoptPetMap() {
-	  
-	    return adoptPet;
+
+		return adoptPet;
 	}
-	public  void setPetMap(Map<String, String> a) {
+
+	public void setPetMap(Map<String, String> a) {
 		adoptPet = a;
 	}
-	public static String getInput(String message) {// String 값 입력받는 함수
-		System.out.print(message);
+
+	public static String hashPassword(String password) {
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			return br.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "";
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			byte[] hashedBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
+			return Base64.getEncoder().encodeToString(hashedBytes);
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("SHA-256 알고리즘이 지원되지 않습니다.", e);
 		}
 	}
-	public static String hashPassword(String password) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashedBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hashedBytes);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 알고리즘이 지원되지 않습니다.", e);
-        }
-    }
+
 	// User 생성자
 	public User(String userId, String password, String nickName) {
 		this.userId = userId;
@@ -70,8 +61,8 @@ public abstract class User implements Serializable {
 		this.nickName = nickName;
 		this.wrongCount = 0;
 		this.banTime = null;
-		this.alarm="";
-		
+		this.alarm = "";
+
 	}
 
 	// 데이터 저장 메서드 (직렬화)
@@ -86,16 +77,16 @@ public abstract class User implements Serializable {
 
 	// 유저 데이터 로드 메서드
 	public static void load() {
-		File directory = new File(defaultpath); //데이터 로드 시 기본 폴더 생성
-	    if (!directory.exists()) {
-	        if (directory.mkdirs()) {
-	            System.out.println("폴더가 존재하지 않아 생성되었습니다: " + directory.getAbsolutePath());
-	        } else {
-	            System.err.println("폴더 생성 실패: " + directory.getAbsolutePath());
-	            return;
-	        }
-	    }
-		
+		File directory = new File(defaultpath); // 데이터 로드 시 기본 폴더 생성
+		if (!directory.exists()) {
+			if (directory.mkdirs()) {
+				System.out.println("폴더가 존재하지 않아 생성되었습니다: " + directory.getAbsolutePath());
+			} else {
+				System.err.println("폴더 생성 실패: " + directory.getAbsolutePath());
+				return;
+			}
+		}
+
 		File file = new File(path);
 		if (!file.exists()) {
 			System.out.println("기존 데이터가 없습니다. 새로운 파일을 생성합니다.");
@@ -115,9 +106,9 @@ public abstract class User implements Serializable {
 		}
 
 	}
-	
-	public static void boardLoad() { //board list load
-		
+
+	public static void boardLoad() { // board list load
+
 		File file = new File(board_list_path);
 		if (!file.exists()) {
 
@@ -134,7 +125,8 @@ public abstract class User implements Serializable {
 		}
 
 	}
-	public static void boardSave() {//board list save
+
+	public static void boardSave() {// board list save
 		try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(board_list_path))) {
 			out.writeObject(boardMap);
 		} catch (IOException e) {
@@ -142,7 +134,7 @@ public abstract class User implements Serializable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void selectBoardList() { // 게시판 목록 조회
 
 		if (boardMap.isEmpty()) {
@@ -215,11 +207,11 @@ public abstract class User implements Serializable {
 			return;
 		}
 
-		nowUserId=userId;
+		nowUserId = userId;
 		System.out.println("현재 로그인 아이디 : " + userId);
-		if (nowUserId!= null) {
+		if (nowUserId != null) {
 			user.menu();
-			
+
 		}
 
 	}
@@ -227,8 +219,8 @@ public abstract class User implements Serializable {
 	public void logout() {
 		System.out.println(nowUserId);
 		if (nowUserId != null) {
-			System.out.println(nowUserId+ "님이 로그아웃하였습니다.");
-			nowUserId= null;
+			System.out.println(nowUserId + "님이 로그아웃하였습니다.");
+			nowUserId = null;
 		} else {
 			System.out.println("잘못된 접근입니다.");
 		}
@@ -253,22 +245,23 @@ public abstract class User implements Serializable {
 
 		}
 	}
-	public static void initializeBoard() {
-	    boardLoad(); // 기존의 board 데이터 불러오기
 
-	    // 게시판 이름 배열
-	    String[] boardNames = {"고양이 입양 게시판", "강아지 입양 게시판", "자유 게시판"};
-	    
-	    // 게시판 초기화 및 폴더 생성
-	    for (String boardName : boardNames) {
-	        String boardPath = defaultpath + "\\" + boardName; // 각 게시판에 맞는 경로 설정
-	        
-	        // 폴더가 없다면 폴더 생성
-	        File boardFolder = new File(boardPath);
-	        if (!boardFolder.exists()) {
-	            boardFolder.mkdirs();  // 폴더 생성
-	            System.out.println(boardName + " 폴더를 생성했습니다.");
-	        }
+	public static void initializeBoard() {
+		boardLoad(); // 기존의 board 데이터 불러오기
+
+		// 게시판 이름 배열
+		String[] boardNames = { "고양이 입양 게시판", "강아지 입양 게시판", "자유 게시판" };
+
+		// 게시판 초기화 및 폴더 생성
+		for (String boardName : boardNames) {
+			String boardPath = defaultpath + "\\" + boardName; // 각 게시판에 맞는 경로 설정
+
+			// 폴더가 없다면 폴더 생성
+			File boardFolder = new File(boardPath);
+			if (!boardFolder.exists()) {
+				boardFolder.mkdirs(); // 폴더 생성
+				System.out.println(boardName + " 폴더를 생성했습니다.");
+			}
 
 			// 게시판이 없으면 새로 추가
 			if (!boardMap.containsKey(boardName)) {
@@ -276,7 +269,7 @@ public abstract class User implements Serializable {
 					boardMap.put(boardName, new Board(boardName, boardPath));
 				} // 자유게시판만 일반게시판으로 초기화
 				else {
-					boardMap.put(boardName, new Board(boardName, boardPath, true , false));
+					boardMap.put(boardName, new Board(boardName, boardPath, true, false));
 				}
 				System.out.println(boardName + " 게시판을 초기화했습니다.");
 			}
@@ -284,8 +277,7 @@ public abstract class User implements Serializable {
 		boardSave();
 
 		System.out.println("보드 데이터를 불러왔습니다.");
-	}																																																																																																																																																																																																																																																																																																																																																																																																																																																																															
-	
+	}
 
 	public abstract void menu();
 
@@ -328,7 +320,7 @@ public abstract class User implements Serializable {
 	public void setNickName(String nickName) {
 		this.nickName = nickName;
 	}
-	
+
 	public void setNowUserId() { // 현재 로그인 id 정보 설정, 로그인 이후 직접 실행해야 함
 		nowUserId = userId;
 	}
@@ -336,19 +328,21 @@ public abstract class User implements Serializable {
 	public static String getNowUserId() { // 현재 로그인 id 리턴
 		return nowUserId;
 	}
+
 	public static void setUserMap(Map<String, User> userMap) {
 		User.userMap = userMap;
 	}
+
 	public String getAlarm() {
 		return alarm;
 	}
+
 	public void setAlarm(String alarm) {
 		this.alarm = alarm;
 	}
+
 	public static Map<String, Board> getBoardMap() {
 		return boardMap;
 	}
-	
 
-	
 }

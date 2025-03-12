@@ -9,17 +9,6 @@ import java.util.Scanner;
 public class Admin extends User implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public static String getInput(String message) {// String 값 입력받는 함수
-		System.out.print(message);
-		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			return br.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "";
-		}
-	}
-
 	public Admin(String userId, String password, String nickName) {
 		// setUserId, setPassword, setNickName 메서드를 사용해도 되지만, 부모 클래스의 생성자를 호출하는 것이 더 좋다.
 		/*
@@ -76,15 +65,11 @@ public class Admin extends User implements Serializable {
 
 	private void createBoard() {
 		while (true) {
-			Scanner scanner = new Scanner(System.in);
 
-			// Prompt the admin for the board name
-//			System.out.print("새로운 게시판의 이름을 입력하세요(한글 및 영문자 2~15): ");
-
-			String boardType = getInput("게시판의 유형을 선택해주세요(1. 입양게시판, 2. 일반게시판, 3. 관리자게시판): ");
+			String boardType = Client.getInput("게시판의 유형을 선택해주세요(1. 입양게시판, 2. 일반게시판, 3. 관리자게시판): ");
 			if (boardType.equals("1") || boardType.equals("2") || boardType.equals("3")) {// 게시판 유형 체크, true 면 제목입력
 
-				String boardName = getInput("새로운 게시판의 이름을 입력하세요(한글 및 영문자 2~15): ");
+				String boardName = Client.getInput("새로운 게시판의 이름을 입력하세요(한글 및 영문자 2~15): ");
 
 				if (!boardName.matches("^[a-zA-Z가-힣][a-zA-Z가-힣0-9 ]{1,14}$")) {// 게시판 제목 패턴 확인
 					System.out.println("게시판 이름은 2~15자이며, 한글 또는 영어로 시작해야 합니다. (숫자와 공백은 허용, 특수문자는 불가)");
@@ -112,9 +97,9 @@ public class Admin extends User implements Serializable {
 						if (boardType.equals("1")) {
 							newBoard = new Board(boardName, defaultpath + "//" + boardName, true, false);
 						} else if (boardType.equals("2")) {
-							newBoard =new Board(boardName, defaultpath + "//" + boardName);
+							newBoard = new Board(boardName, defaultpath + "//" + boardName);
 						} else if (boardType.equals("3")) {
-							newBoard =new Board(boardName, defaultpath + "//" + boardName, false, true);
+							newBoard = new Board(boardName, defaultpath + "//" + boardName, false, true);
 						}
 
 						boardMap.put(boardName, newBoard);
