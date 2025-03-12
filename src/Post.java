@@ -75,7 +75,7 @@ public class Post implements Serializable {
 			if (pattern.matcher(commentContent).matches()) {
 				break; // 유효한 입력이면 루프 종료
 			}
-			System.out.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
+			System.err.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
 		}
 
 		// 가장 높은 commentNum을 찾아서 자동 증가
@@ -89,33 +89,58 @@ public class Post implements Serializable {
 	}
 
 	public void commentPrint() {
+		final int LINE_LENGTH = 75; // 전체 라인 길이
+
 		// 순서가 없는 Set을 Treeset으로 순서대로 정렬
 		Set<Integer> set = new TreeSet<Integer>(this.commentsMap.keySet());
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
-		System.out.println("번호\t댓글\t작성자\t작성시간");
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
-		for (Integer number : set) {
-			int num = this.commentsMap.get(number).getCommentNum();
-			String comment = this.commentsMap.get(number).getContent();
-			String author = this.commentsMap.get(number).getAuthor();
-			String time = this.commentsMap.get(number).getCreateAt().format(dtf);
-			System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
+		System.out.println("\n" + "=".repeat(LINE_LENGTH));
+		String title = "📌[ 댓글 목록 ]📌";
+		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+		System.out.println("=".repeat(LINE_LENGTH));
+
+		System.out.printf("| %-6s | %-30s | %-10s | %-20s \n", "번호", "댓글 내용", "작성자", "작성일");
+		System.out.println("-".repeat(LINE_LENGTH));
+
+		for (Comment comment : commentsMap.values()) {
+			// 내용 길이 제한 (15자 이상 10자까지만 출력 + "...")
+			String content = comment.getContent();
+			if (content.length() > 30) {
+				content = content.substring(0, 10) + "..."; // 길이 제한 적용
+			}
+
+			System.out.printf("| %-6d | %-30s | %-10s | %-20s \n", comment.getCommentNum(), content + ".....",
+					comment.getAuthor(), comment.getCreateAt().format(dtf));
 		}
+
+		System.out.println("=".repeat(LINE_LENGTH));
 	}
 
 	public void reverseCommentPrint() { // 최신순
+		final int LINE_LENGTH = 75; // 전체 라인 길이
+
 		// Set은 순서가 없어서 List로 받아주고 최신순 정렬
 		List<Integer> list = new ArrayList<Integer>(this.commentsMap.keySet());
 		list.sort(Comparator.reverseOrder());
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
-		System.out.println("번호\t댓글\t작성자\t작성시간");
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+
+		System.out.println("\n" + "=".repeat(LINE_LENGTH));
+		String title = "📌[ 댓글 정렬 ]📌";
+		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+		System.out.println("=".repeat(LINE_LENGTH));
+
+		System.out.printf("| %-6s | %-30s | %-10s | %-20s \n", "번호", "댓글 내용", "작성자", "작성일");
+		System.out.println("-".repeat(LINE_LENGTH));
 
 		for (Integer number : list) {
 			int num = this.commentsMap.get(number).getCommentNum();
 			String comment = this.commentsMap.get(number).getContent();
 			String author = this.commentsMap.get(number).getAuthor();
 			String time = this.commentsMap.get(number).getCreateAt().format(dtf);
-			System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
+//			System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
+
+			System.out.printf("| %-6d | %-30s | %-10s | %-20s \n", num, comment, author, time);
 		}
 	}
 
@@ -131,7 +156,7 @@ public class Post implements Serializable {
 				if (n != 0)
 					break;
 			} catch (NumberFormatException e) {
-				System.out.println("⚠ 댓글 번호는 숫자만 가능합니다!");
+				System.err.println("⚠ 댓글 번호는 숫자만 가능합니다!");
 			}
 		}
 
@@ -140,7 +165,7 @@ public class Post implements Serializable {
 			if (n == num) {
 				Comment comment = commentsMap.get(num);
 				if (comment == null) {
-					System.out.println("해당 댓글이 존재하지 않습니다.");
+					System.err.println("해당 댓글이 존재하지 않습니다.");
 				}
 				edit = true;
 //	            System.out.println("현재 userId: " + this.userId);
@@ -162,13 +187,13 @@ public class Post implements Serializable {
 					System.out.println("✅ 댓글이 수정되었습니다.");
 					saveAllPosts(); // 변경 사항 저장
 				} else {
-					System.out.println("수정 권한이 없습니다.");
+					System.err.println("수정 권한이 없습니다.");
 				}
 				break;
 			}
 		}
 		if (!edit) {
-			System.out.println("잘못된 댓글 번호를 입력했습니다.");
+			System.err.println("잘못된 댓글 번호를 입력했습니다.");
 		}
 	}
 
@@ -185,7 +210,7 @@ public class Post implements Serializable {
 				if (n != 0)
 					break;
 			} catch (NumberFormatException e) {
-				System.out.println("⚠ 댓글 번호는 숫자만 가능합니다!");
+				System.err.println("⚠ 댓글 번호는 숫자만 가능합니다!");
 			}
 		}
 
@@ -201,13 +226,13 @@ public class Post implements Serializable {
 					it.remove();
 					System.out.println("댓글이 삭제되었습니다.");
 				} else {
-					System.out.println("수정 권한이 없습니다.");
+					System.err.println("수정 권한이 없습니다.");
 				}
 				break;
 			}
 		}
 		if (!delete) {
-			System.out.println("잘못된 댓글 번호를 입력하였습니다.");
+			System.err.println("잘못된 댓글 번호를 입력하였습니다.");
 		}
 	}
 
@@ -263,9 +288,20 @@ public class Post implements Serializable {
 	}
 
 	public void commentRun() {
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
 		commentLoad();
 		while (true) {
-			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t4.정렬\t0.종료");
+			System.out.println("\n" + "=".repeat(LINE_LENGTH));
+			String title = "📌 [ 댓글 목록 ] 📌";
+			System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+			System.out.println("=".repeat(LINE_LENGTH));
+
+			// 메뉴 표시
+			System.out.printf("| %-15s | %-15s | %-15s | %-15s | %-5s |\n", "1. 댓글 작성", "2. 댓글 수정", "3. 댓글 삭제", "4. 정렬",
+					"0. 종료");
+			System.out.println("-".repeat(LINE_LENGTH));
+
 			String choice = Client.getInput("선택: ");
 
 			switch (choice) {
@@ -292,12 +328,17 @@ public class Post implements Serializable {
 	}
 
 	public void adopPetcommentRun() {
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
 		commentLoad();
 		while (true) {
-			System.out.println("\n📌 입양 게시글 댓글 메뉴");
-			System.out.println("1. 댓글 작성\t2. 댓글 수정\t3. 댓글 삭제\t4. 정렬\t5. 입양 신청\t0. 종료");
+			System.out.println("\n📌 [ 입양 게시글 댓글 메뉴 ]");
+			System.out.printf("%-10s  %-10s  %-10s  %-10s %-10s %-10s \n", "1. 댓글 작성", "2. 댓글 수정", "3. 댓글 삭제", "4. 정렬",
+					"5.입양 신청", "0.종료");
+			System.out.println();
 
 			String input = Client.getInput("선택: ").trim();
+			System.out.println("-".repeat(LINE_LENGTH));
 
 			switch (input) {
 			case "1":
@@ -326,26 +367,24 @@ public class Post implements Serializable {
 	}
 
 	public void writeAdoptPet() {
-		while (true) {
-			String choice = Client.getInput("입양을 신청하시려면 \'Y\'를 입력해주세요(Y. 신청, N. 취소): ");
-			if (choice.toUpperCase().equals("Y")) {
-				Client.getUserMap().get(getUserId()).adoptPetMap().put(getPostNum() + "/" + Client.getNowUserId(),
-						this.postPath.replace(this.getTitle(), "").replace(Client.defaultpath, "").replace("\\", "")
-								+ "/입양승인요청");
-				System.out.println(Client.getUserMap().get(getUserId()).adoptPetMap().toString());
-				System.out.println(Client.getUserMap().get(getUserId()));
-				User.getUserMap().get(getUserId()).setAlarm("1");
-				System.out.println("입양 신청이 완료 되었습니다.");
-
-				return;
-			} else if (choice.toUpperCase().equals("N")) {
-				System.out.println("입양 신청을 취소합니다.");
-				return;
-			} else {
-				System.out.println("올바른 값을 입력해주세요(Y. 신청, N. 취소)");
-			}
-		}
-	}
+	       while (true) {
+	           String choice = Client.getInput("입양을 신청하시려면 \'Y\'를 입력해주세요(Y. 신청, N. 취소): ");
+	           if (choice.toUpperCase().equals("Y")) {
+	              Client.getUserMap().get(getUserId()).adoptPetMap().put(getPostNum() + "/" + Client.getNowUserId(),this.postPath.replace(this.getTitle(),"").replace(Client.defaultpath, "").replace("\\","")+"/입양승인요청");
+	              //adoptPetMap(String key, String value) > key = postNum/nowUserId, value = post의 boardName/입양승인요청 
+	              //put를 getUserId() post작성자 user 객체의 adoptPetMap()
+	              User.getUserMap().get(getUserId()).setAlarm("1");
+	               System.out.println("입양 신청이 완료 되었습니다.");
+	               
+	               return;
+	           } else if (choice.toUpperCase().equals("N")) {
+	               System.out.println("입양 신청을 취소합니다.");
+	               return;
+	           } else {
+	               System.out.println("올바른 값을 입력해주세요(Y. 신청, N. 취소)");
+	           }
+	       }
+	   }
 
 	// 게시글 및 댓글 개별 파일 저장
 	public void saveAllPosts() {
@@ -357,7 +396,7 @@ public class Post implements Serializable {
 			if (directory.mkdir()) {
 				System.out.println("폴더 생성 완료: " + directory);
 			} else {
-				System.out.println("폴더 생성 실패");
+				System.err.println("폴더 생성 실패");
 				return;
 			}
 		}
@@ -398,7 +437,7 @@ public class Post implements Serializable {
 
 			// System.out.println("✅ 게시글과 댓글이 저장되었습니다: " + filePath);
 		} catch (IOException e) {
-			System.out.println("파일 저장 중 오류가 발생했습니다.");
+			System.err.println("파일 저장 중 오류가 발생했습니다.");
 			e.printStackTrace();
 		}
 	}
