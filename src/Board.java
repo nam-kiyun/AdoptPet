@@ -16,23 +16,22 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-
-
 public class Board implements Serializable {
 
 	private int boardNum; // 게시판번호
 	private String boardName; // 게시판제목
 	private String boardPath; // 경로
 	private HashMap<Integer, Post> postsMap; // 게시글 관리
-	private boolean adotPetBoard; //입양게시판 여부 체크 
+	private boolean adotPetBoard; // 입양게시판 여부 체크
 
 	public Board(String boardName, String boardPath) {
-		this(boardName,boardPath,false);
+		this(boardName, boardPath, false);
 	}
+
 	public Board(String boardName, String boardPath, boolean adotPetBoard) {
 		this.boardName = boardName;
 		this.boardPath = boardPath;
-		this.adotPetBoard=adotPetBoard;
+		this.adotPetBoard = adotPetBoard;
 		this.postsMap = new HashMap<Integer, Post>();
 	}
 
@@ -120,34 +119,13 @@ public class Board implements Serializable {
 		System.out.printf("작성일 : %s%n", post.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 		System.out.println("내용: " + post.getContent());
 		System.out.println("=============================================================");
-		
-		if(this.adotPetBoard) {
-			post.adopPetcommentRun();
-		}else {
-		post.commentRun();}
-		
 
-//		// 게시판이 "고양이" "강아지" 입양 신청 여부
-//		if (boardName.contains("고양이") || (boardName.contains("강아지"))) {
-//			System.out.println("\n입양 신청을 원하시면 (1)을 입력하세요. 취소하려면(0)을 입력하세요.");
-//			System.out.println("선택: ");
-////	         System.out.println("입양 신청을 원하십니까? (예/아니요): ");
-//
-//			try {
-//				int choice = Integer.parseInt(br.readLine().trim());
-//
-//				if (choice == 1) {
-//					System.out.println("입양 신청이 완료되었습니다!");
-//					// 입양 신청 추가 기능 구현 해야함
-//				} else if (choice == 0) {
-//					System.out.println("입양 신청을 취소하였습니다.");
-//				} else {
-//					System.out.println("올바른 숫자를 입력해주세요.");
-//				}
-//			} catch (IOException | NumberFormatException e) {
-//				System.out.println("숫자를 입력해주세요.");
-//			}
-//		}
+		if (this.adotPetBoard) {
+			post.adopPetcommentRun();
+		} else {
+			post.commentRun();
+		}
+
 	}
 
 	// 게시글 작성
@@ -166,7 +144,7 @@ public class Board implements Serializable {
 		}
 
 		try {
-			while(true) {
+			while (true) {
 				System.out.println("익명으로 작성하시겠습니까? (y/n): ");
 				String choice = br.readLine().toUpperCase(); // 대소문자 구분 없이
 
@@ -201,6 +179,10 @@ public class Board implements Serializable {
 				System.out.println("내용은 최소 10자 이상 입력해야 합니다.");
 			}
 
+			File dir = new File(this.boardPath + "\\" + title);
+			if (!dir.exists()) {
+				dir.mkdirs();
+			}
 			int postNum = postsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
 			author = check ? "익명" : author;
 			Post post = new Post(postNum, this.boardPath, title, content, author);
@@ -295,10 +277,10 @@ public class Board implements Serializable {
 				}
 
 				Post post = postsMap.get(postNum);
-//			if (!post.getAuthor().equals(Client.getNowUserId())) {
-//				System.out.println("작성자만 게시글을 수정할 수 있습니다.");
-//				return;
-//			}
+				if (!post.getUserId().equals(Client.getNowUserId())) {
+					System.out.println("작성자만 게시글을 수정할 수 있습니다.");
+					return;
+				}
 
 				System.out.print("제목: ");
 				post.setTitle(br.readLine());
@@ -318,13 +300,28 @@ public class Board implements Serializable {
 	}
 
 	public void deletePostDir(int postNum) {
-		File file = new File(boardName+"\\"+postsMap.get(postNum).getTitle());
-		if(file.exists()) {
+		File file = new File(boardPath + "\\" + postsMap.get(postNum).getTitle());
+		if (file.exists()) {
+			deletePostDirFile(file);
 			file.delete();
 		} else {
 			return;
 		}
 	}
+
+	public void deletePostDirFile(File folder) {
+		File[] files = folder.listFiles();
+		if (files != null) {
+			for (File file : files) {
+				if (file.isDirectory()) {
+					deletePostDirFile(file);
+				}
+				file.delete();
+			}
+		}
+
+	}
+
 	// 게시글 삭제
 	public void deletePost() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -339,13 +336,17 @@ public class Board implements Serializable {
 					System.out.println("해당 번호의 게시글이 존재하지 않습니다.");
 					return;
 				}
-				deletePostDir(postNum);
-				postsMap.remove(postNum);
-				
-				savePosts();
+				if(postsMap.get(postNum).getUserId().equals(User.getNowUserId())) {
+					deletePostDir(postNum);
+					postsMap.remove(postNum);
 
-				
-				System.out.println("게시글이 삭제되었습니다.");
+					savePosts();
+
+					System.out.println("게시글이 삭제되었습니다.");
+				} else {
+					System.out.println("본인이 작성한 게시글이 아닙니다.");
+					return;
+				}
 
 			} catch (NumberFormatException e) {
 				System.out.println("숫자를 입력해주세요.");
@@ -500,7 +501,7 @@ public class Board implements Serializable {
 	public void setBoardNum(int boardNum) {
 		this.boardNum = boardNum;
 	}
- 
+
 	public String getBoardName() {
 		return boardName;
 	}
