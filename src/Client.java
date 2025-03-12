@@ -2,7 +2,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -177,12 +179,34 @@ public class Client extends User implements Serializable{
 
 	@Override
 	public void menu() {// 클라이언트 로그인 이후 메뉴
+		switch (getUserMap().get(getNowUserId()).getAlarm()) {
+		case "1":
+			String ch = getInput("확인하지 않은 입양승인요청이 존재합니다. 해당 메뉴로 이동할까요?(Y. 이동)");
+			if (ch.toUpperCase().equals("Y")) {
+				adoptPetList();
+			}
+			getUserMap().get(getNowUserId()).setAlarm("");
+			break;
+		case "2":
+			String ch1 = getInput("확인하지 않은 입양확정요청이 존재합니다. 해당 메뉴로 이동할까요?(Y. 이동)");
+			if (ch1.toUpperCase().equals("Y")) {
+				adoptPetList1();
+			}
+			getUserMap().get(getNowUserId()).setAlarm("");
+			break;
+
+		default:
+			break;
+		}
+	
 		while (true) {
 			System.out.println("======================================");
 			System.out.println("1.게시판 목록보기");
-			System.out.println("2.회원정보 수정");
-			System.out.println("3.회원탈퇴");
-			System.out.println("4.로그아웃");
+			System.out.println("2.입양 요청 승인 목록보기");
+			System.out.println("3.입양 승인 확정 목록보기");
+			System.out.println("4.회원정보 수정");
+			System.out.println("5.회원탈퇴");
+			System.out.println("6.로그아웃");
 			System.out.println("======================================");
 			String choice = getInput("원하시는 메뉴를 선택해주세요: ");
 
@@ -191,12 +215,18 @@ public class Client extends User implements Serializable{
 				super.selectBoardList();
 				break;
 			case "2":
-				this.editProfile();
+				adoptPetList();
 				break;
 			case "3":
+				adoptPetList1();
+				break;
+			case "4":
+				this.editProfile();
+				break;
+			case "5":
 				this.deleteAccount();
 				return;
-			case "4":
+			case "6":
 				super.logout();
 				return;
 
@@ -206,6 +236,133 @@ public class Client extends User implements Serializable{
 			}
 		}
 	}
+	
+	public void adoptPetList() {
+	    Map<String, String> adoptPetMap = Client.getUserMap().get(getNowUserId()).adoptPetMap();
+	  System.out.println(adoptPetMap.toString());
+	    if (adoptPetMap != null && !adoptPetMap.isEmpty()) {
+	        String adoptPetMapString = adoptPetMap.toString();
+	        String[] entries = adoptPetMapString.substring(1, adoptPetMapString.length() - 1).split(", ");
+	        List<String[]> list = new ArrayList<>();
+
+	        // 신청 상태가 "입양신청"인 경우만 리스트에 추가
+	        for (String entry : entries) {
+	            String[] keyValue = entry.split("="); // key와 value를 '='로 분리
+	            String[] keyParts = keyValue[0].split("/"); // key 부분을 '/'로 분리
+	            String[] valueParts = keyValue[1].split("/"); // value 부분을 '/'로 분리
+
+	            String postNum = keyParts[0]; // 게시글 번호
+	            String userId = keyParts[1]; // 유저 아이디
+	            String postTitle = valueParts[0]; // 게시글 제목
+	            String applicationStatus = valueParts[1]; // 신청 상태
+
+	            // 신청 상태가 "입양신청"인 경우에만 리스트에 추가
+	            if ("입양승인요청".equals(applicationStatus)) {
+	                list.add(new String[] { postNum, userId, postTitle, applicationStatus });
+	            }
+	        }
+
+	        // 저장된 내용 출력
+	        if (!list.isEmpty()) {
+	            System.out.println("======================================");
+	            for (String[] data : list) {
+	                System.out.println(data[0] + "번 게시글 \"" + data[2] + "\"에서 " + data[1] + "님이 " + data[3] + "했습니다.");
+	            }
+	            System.out.println("======================================");
+
+	            // 게시글 번호 선택
+	            String selectedPostNum = getInput("승인할 게시글 번호를 입력해주세요");
+	            int selectedIndex = -1; // 인덱스를 찾기 위한 변수, -1은 찾지 못했을 경우
+
+	            // 리스트에서 선택한 게시글 번호 찾기
+	            for (int i = 0; i < list.size(); i++) {
+	                String[] data = list.get(i);
+	                if (data[0].equals(selectedPostNum)) {
+	                    selectedIndex = i; // 게시글 번호가 일치하는 인덱스를 찾음
+	                    break; // 일치하는 게시글을 찾으면 루프 종료
+	                }
+	            }
+
+	            if (selectedIndex == -1) {
+	                System.out.println("입력하신 게시글 번호가 목록에 없습니다. 다시 확인해주세요.");
+	            } else {
+	                // 해당 게시글 번호로 입양 확정 처리
+	                String[] selectedData = list.get(selectedIndex);
+	                User.getUserMap().get(selectedData[1]).adoptPetMap().put(selectedData[0] + "/" + getNowUserId(),
+	                        selectedData[2] + "/입양승인처리");
+	                User.getUserMap().get(selectedData[1]).setAlarm("2");
+	                System.out.println(selectedData[0] + "번 게시글의 입양을 승인했습니다.");
+	            }
+	        } else {
+	            System.out.println("입양 신청 목록이 비어 있습니다.");
+	        }
+	    } else {
+	        System.out.println("입양 신청 목록이 비어 있습니다.");
+	    }
+	}
+	
+	public void adoptPetList1() {
+		 Map<String, String> adoptPetMap = Client.getUserMap().get(getNowUserId()).adoptPetMap();
+		  System.out.println(adoptPetMap.toString());
+	    if (adoptPetMap != null && !adoptPetMap.isEmpty()) {
+	        String adoptPetMapString = adoptPetMap.toString();
+	        String[] entries = adoptPetMapString.substring(1, adoptPetMapString.length() - 1).split(", ");
+	        List<String[]> list = new ArrayList<>();
+
+	        // "입양승인" 상태인 경우만 리스트에 추가
+	        for (String entry : entries) {
+	            String[] keyValue = entry.split("="); // key와 value를 '='로 분리
+	            String[] keyParts = keyValue[0].split("/"); // key 부분을 '/'로 분리
+	            String[] valueParts = keyValue[1].split("/"); // value 부분을 '/'로 분리
+
+	            String postNum = keyParts[0]; // 게시글 번호
+	            String userId = keyParts[1]; // 유저 아이디
+	            String postTitle = valueParts[0]; // 게시글 제목
+	            String applicationStatus = valueParts[1]; // 신청 상태
+
+	            // 신청 상태가 "입양승인"인 경우에만 리스트에 추가
+	            if ("입양승인처리".equals(applicationStatus)) {
+	                list.add(new String[] { postNum, userId, postTitle, applicationStatus });
+	            }
+	        }
+
+	        // 저장된 내용 출력
+	        if (!list.isEmpty()) {
+	            System.out.println("======================================");
+	            for (String[] data : list) {
+	                System.out.println(data[0] + "번 게시글 \"" + data[2] + "\"에서 " + data[1] + "님이 " + data[3] + "했습니다.");
+	            }
+	            System.out.println("======================================");
+
+	            // 게시글 번호 선택
+	            String selectedPostNum = getInput("입양 확정할 게시글 번호를 입력해주세요");
+	            int selectedIndex = -1;  // 인덱스를 찾기 위한 변수, -1은 찾지 못했을 경우
+
+	            // 리스트에서 선택한 게시글 번호 찾기
+	            for (int i = 0; i < list.size(); i++) {
+	                String[] data = list.get(i);
+	                if (data[0].equals(selectedPostNum)) {
+	                    selectedIndex = i;  // 게시글 번호가 일치하는 인덱스를 찾음
+	                    break;  // 일치하는 게시글을 찾으면 루프 종료
+	                }
+	            }
+
+	            if (selectedIndex == -1) {
+	                System.out.println("입력하신 게시글 번호가 목록에 없습니다. 다시 확인해주세요.");
+	            } else {
+	                // 해당 게시글 번호로 입양 확정 처리
+	                String[] selectedData = list.get(selectedIndex);
+	                User.getUserMap().get(selectedData[1]).adoptPetMap().put(selectedData[0] + "/" + getNowUserId(), selectedData[2] + "/입양확정");
+	                System.out.println(selectedData[0] + "번 게시글의 입양이 확정되었습니다.");
+	            }
+	        } else {
+	            System.out.println("입양 확정 목록이 비어 있습니다.");
+	        }
+	    } else {
+	        System.out.println("입양 확정 목록이 비어 있습니다.");
+	    }
+	}
+	
 	
 	public static void run() {
 		Client.initialize();//초기 Admin 설정 및 파일 로드 
@@ -246,6 +403,7 @@ public class Client extends User implements Serializable{
 
 	Client(String userId, String password, String nickName) {// 클라이언트 생성자(회원가입시)
 		super(userId, password, nickName);
+		super.adoptPet=new HashMap<String, String>();
 	}
 
 	

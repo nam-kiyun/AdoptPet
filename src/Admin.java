@@ -1,4 +1,7 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Scanner;
@@ -6,6 +9,17 @@ import java.util.Scanner;
 public class Admin extends User implements Serializable {
     private static final long serialVersionUID = 1L;
    
+    public static String getInput(String message) {// String 값 입력받는 함수
+		System.out.print(message);
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			return br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+    
     public Admin(String userId, String password, String nickName) {
         // setUserId, setPassword, setNickName 메서드를 사용해도 되지만, 부모 클래스의 생성자를 호출하는 것이 더 좋다.
         /*
@@ -67,14 +81,17 @@ public class Admin extends User implements Serializable {
 			Scanner scanner = new Scanner(System.in);
 
 			// Prompt the admin for the board name
-			System.out.print("새로운 게시판의 이름을 입력하세요(한글 및 영문자 2~15): ");
-			String boardName = scanner.nextLine();
-			if (boardName.matches("^[a-zA-Z가-힣][a-zA-Z가-힣0-9 ]{1,14}$")) {//게시판 제목 패턴 확인 
+//			System.out.print("새로운 게시판의 이름을 입력하세요(한글 및 영문자 2~15): ");
+			
+			
+			String boardType=getInput("게시판의 유형을 선택해주세요(1. 입양게시판, 2. 일반게시판): ");
+			if(boardType.equals("1")||boardType.equals("2")) {//게시판 유형 체크, true 면 제목입력
+	
+			String boardName = getInput("새로운 게시판의 이름을 입력하세요(한글 및 영문자 2~15): ");
+			
+			if (!boardName.matches("^[a-zA-Z가-힣][a-zA-Z가-힣0-9 ]{1,14}$")) {//게시판 제목 패턴 확인 
 				System.out.println("게시판 이름은 2~15자이며, 한글 또는 영어로 시작해야 합니다. (숫자와 공백은 허용, 특수문자는 불가)");
 			} else {
-
-				// Check if the board already exists
-
 				if (boardMap.containsKey(boardName)) {//패턴 맞을 경우 중복확인
 					System.out.println("이름이 이미 사용 중인 게시판이 있습니다.");
 
@@ -93,7 +110,12 @@ public class Admin extends User implements Serializable {
 							return;
 						}
 					}
-					Board newBoard = new Board(boardName, defaultpath + "//" + boardName);
+					
+					
+					Board newBoard =(boardType.equals("1"))? //1을 선택하면 입양 게시판으로 생성 ==adotPetBoard true로
+							new Board(boardName, defaultpath + "//" + boardName,true):new Board(boardName, defaultpath + "//" + boardName);
+					
+					
 					boardMap.put(boardName, newBoard);
 
 					System.out.println("새로운 게시판이 성공적으로 생성되었습니다.");
@@ -102,6 +124,9 @@ public class Admin extends User implements Serializable {
 					boardSave();
 					return;
 				}
+			}
+			}else {
+				System.out.println("올바른 유형을 선택해주세요(1. 입양게시판, 2. 일반게시판)");
 			}
 		}
 
