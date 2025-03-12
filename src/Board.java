@@ -120,7 +120,7 @@ public class Board implements Serializable {
 		System.out.println("내용: " + post.getContent());
 		System.out.println("=============================================================");
 
-		if (this.adotPetBoard) {
+		if (this.adotPetBoard&&!post.isAdoptPetCheck()) {
 			post.adopPetcommentRun();
 		} else {
 			post.commentRun();
