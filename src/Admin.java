@@ -18,37 +18,60 @@ public class Admin extends User implements Serializable {
 	}
 
 	public void searchUser(String userId) {
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
 		Map<String, User> userMap = User.getUserMap();
+
+		System.out.println("\n" + "=".repeat(LINE_LENGTH));
+		String title = "📌[ 사용자 검색 결과 ]📌";
+		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+		System.out.println("=".repeat(LINE_LENGTH));
+
 		if (userMap.containsKey(userId)) {
 			User user = userMap.get(userId);
-			System.out.println(
-					"아이디: " + user.getUserId() + ", 닉네임: " + (user.getNickName() != null ? user.getNickName() : "N/A"));
+			System.out.printf("아이디: %-15s | 닉네임: %-15s\n", user.getUserId(),
+					(user.getNickName() != null ? user.getNickName() : "N/A"));
 		} else {
-			System.out.println("등록된 사용자가 없습니다");
+			System.err.println("등록된 사용자가 없습니다.");
 		}
 	}
 
 	public void deleteUser(String userId) {
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
 		Map<String, User> userMap = User.getUserMap();
+
+		System.out.println("\n" + "=".repeat(LINE_LENGTH));
+		String title = "📌[ 사용자 삭제 ]📌";
+		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+		System.out.println("=".repeat(LINE_LENGTH));
+
 		if (userMap.containsKey(userId)) {
 			userMap.remove(userId);
 			User.save(); // 삭제 후 자동 저장
 			System.out.println(userId + " 사용자가 삭제되었습니다.");
 		} else {
-			System.out.println("삭제할 사용자가 존재하지 않습니다.");
+			System.err.println("삭제할 사용자가 존재하지 않습니다.");
 		}
+		System.out.println("=".repeat(LINE_LENGTH));
 	}
 
 	public void showUsersList() {
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
 		Map<String, User> userMap = User.getUserMap();
-		System.out.println("\n======================== [전체 사용자 목록] ========================");
+
+		System.out.println("\n" + "=".repeat(LINE_LENGTH));
+		String title = "📌[ 전체 사용자 목록 ]📌";
+		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+		System.out.println("=".repeat(LINE_LENGTH));
 
 		if (userMap.isEmpty()) {
 			System.out.println("등록된 사용자가 없습니다.");
 			return;
 		}
-		System.out.printf("%-15s | %-15s | %-10s | %-20s%n", "아이디", "닉네임", "비번 오류 횟수", "밴 남은 시간");
-		System.out.println("---------------------------------------------------------------------");
+		System.out.printf("%-15s | %-15s | %-15s | %-20s%n", "아이디", "닉네임", "비번 오류 횟수", "밴 남은 시간");
+		System.out.println("-".repeat(LINE_LENGTH));
 
 		for (Map.Entry<String, User> entry : userMap.entrySet()) {
 			String userId = entry.getKey();
@@ -59,8 +82,7 @@ public class Admin extends User implements Serializable {
 
 			System.out.printf("%-18s | %-18s | %-14d | %-20s%n", userId, nickName, wrongCount, banTime);
 		}
-
-		System.out.println("=====================================================================");
+		System.out.println("=".repeat(LINE_LENGTH));
 	}
 
 	private void createBoard() {
@@ -105,7 +127,6 @@ public class Admin extends User implements Serializable {
 						boardMap.put(boardName, newBoard);
 
 						System.out.println("새로운 게시판이 성공적으로 생성되었습니다.");
-						// Optionally save the updated boardMap
 
 						boardSave();
 						System.out.println(boardMap.toString());
@@ -113,7 +134,7 @@ public class Admin extends User implements Serializable {
 					}
 				}
 			} else {
-				System.out.println("올바른 유형을 선택해주세요(1. 입양게시판, 2. 일반게시판, 3. 관리자게시판)");
+				System.err.println("올바른 유형을 선택해주세요(1. 입양게시판, 2. 일반게시판, 3. 관리자게시판)");
 			}
 		}
 
@@ -128,7 +149,7 @@ public class Admin extends User implements Serializable {
 
 		// 게시판이 존재하는지 확인
 		if (!boardMap.containsKey(boardName)) {
-			System.out.println("해당 이름의 게시판이 존재하지 않습니다.");
+			System.err.println("해당 이름의 게시판이 존재하지 않습니다.");
 			return;
 		}
 
@@ -175,8 +196,14 @@ public class Admin extends User implements Serializable {
 
 	@Override
 	public void menu() {
+		final int LINE_LENGTH = 75; // 전체 라인 길이
+
 		while (true) {
-			System.out.println("\n======== [Admin 메뉴] ========");
+			System.out.println("\n" + "=".repeat(LINE_LENGTH));
+
+			String title = "📌[ Admin 메뉴 ]📌";
+			System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+
 			System.out.println("1. 전체 사용자 목록 보기");
 			System.out.println("2. 사용자 검색");
 			System.out.println("3. 사용자 삭제");
@@ -185,6 +212,7 @@ public class Admin extends User implements Serializable {
 			System.out.println("6. 게시판 삭제");
 			System.out.println("7. 게시판 목록 보기");
 			System.out.println("0. 종료");
+			System.out.println("=".repeat(LINE_LENGTH));
 			System.out.print("선택 >> ");
 			Scanner scanner = new Scanner(System.in);
 			int choice = scanner.nextInt();
@@ -205,6 +233,7 @@ public class Admin extends User implements Serializable {
 				deleteUser(deleteId);
 				break;
 			case 4:
+				System.out.println("로그아웃 되었습니다.");
 				logout();
 				return;
 			case 5:
@@ -217,10 +246,10 @@ public class Admin extends User implements Serializable {
 				selectBoardList();
 				break;
 			case 0:
-				System.out.println("종료 되었습니다.");
+				System.out.println("프로그램을 종료합니다.");
 				System.exit(0);
 			default:
-				System.out.println("잘못된 입력입니다. 다시 선택하세요.");
+				System.err.println("잘못된 입력입니다. 다시 선택하세요.");
 			}
 		}
 	}
