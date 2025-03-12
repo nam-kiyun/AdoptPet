@@ -276,7 +276,7 @@ public abstract class User implements Serializable {
 					boardMap.put(boardName, new Board(boardName, boardPath));
 				} // 자유게시판만 일반게시판으로 초기화
 				else {
-					boardMap.put(boardName, new Board(boardName, boardPath, true));
+					boardMap.put(boardName, new Board(boardName, boardPath, true , false));
 				}
 				System.out.println(boardName + " 게시판을 초기화했습니다.");
 			}

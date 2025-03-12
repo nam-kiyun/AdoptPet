@@ -23,22 +23,23 @@ public class Board implements Serializable {
 	private String boardPath; // 경로
 	private HashMap<Integer, Post> postsMap; // 게시글 관리
 	private boolean adotPetBoard; // 입양게시판 여부 체크
+	private boolean adminBoard;
 
 	public Board(String boardName, String boardPath) {
-		this(boardName, boardPath, false);
+		this(boardName, boardPath, false, false);
 	}
 
-	public Board(String boardName, String boardPath, boolean adotPetBoard) {
+	public Board(String boardName, String boardPath, boolean adotPetBoard, boolean adminBoard) {
 		this.boardName = boardName;
 		this.boardPath = boardPath;
 		this.adotPetBoard = adotPetBoard;
+		this.adminBoard = adminBoard;
 		this.postsMap = new HashMap<Integer, Post>();
 	}
 
 	// 실행
 	public void run() {
 		loadPost();
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
 		while (true) {
 			System.out.println("\n [" + boardName + "]");
@@ -49,34 +50,28 @@ public class Board implements Serializable {
 			System.out.println("4. 게시글 삭제");
 			System.out.println("5. 검색 하기");
 			System.out.println("6. 뒤로 가기");
-			System.out.print("선택: ");
+			String choice = Client.getInput("선택: ");
 
-			try {
-				int choice = Integer.parseInt(br.readLine());
-
-				switch (choice) {
-				case 1:
-					listAllPosts();
-					break;
-				case 2:
-					writePost();
-					break;
-				case 3:
-					editPost();
-					break;
-				case 4:
-					deletePost();
-					break;
-				case 5:
-					searchPost();
-					break;
-				case 6:
-					return;
-				default:
-					System.out.println("다시 입력해주세요.");
-				}
-			} catch (IOException | NumberFormatException e) {
-				System.out.println("숫자를 입력해주세요.");
+			switch (choice) {
+			case "1":
+				listAllPosts();
+				break;
+			case "2":
+				writePost();
+				break;
+			case "3":
+				editPost();
+				break;
+			case "4":
+				deletePost();
+				break;
+			case "5":
+				searchPost();
+				break;
+			case "6":
+				return;
+			default:
+				System.out.println("다시 입력해주세요.");
 			}
 		}
 	}
@@ -120,10 +115,101 @@ public class Board implements Serializable {
 		System.out.println("내용: " + post.getContent());
 		System.out.println("=============================================================");
 
-		if (this.adotPetBoard&&!post.isAdoptPetCheck()) {
+		if (this.adotPetBoard && !post.isAdoptPetCheck()) {
 			post.adopPetcommentRun();
 		} else {
 			post.commentRun();
+		}
+
+	}
+
+	// 입양 게시글 작성
+	public void writeAdoptPost() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String author = Client.getUserMap().get(Client.getNowUserId()).getNickName();
+
+		// 유효성 검사 정규 표현식
+		Pattern titlePattern = Pattern.compile("^.{2,}$"); // 2자 이상
+		Pattern contentPattern = Pattern.compile("^.{10,}$"); // 10자 이상
+		Pattern namePattern = Pattern.compile("^[가-힣a-zA-Z]{2,}$"); // 한글 또는 영문, 최소 2자 이상
+		Pattern agePattern = Pattern.compile("^[0-9]{1,2}$"); // 1~3자리 숫자
+		Pattern genderPattern = Pattern.compile("^[MF]$"); // M 또는 F
+
+		try {
+			System.out.println("==== 🐾 입양 게시글 작성 🐾 ====");
+
+			String title;
+			while (true) {
+				System.out.print("📌 제목 (2자 이상): ");
+				title = br.readLine();
+				if (titlePattern.matcher(title).matches()) {
+					break;
+				}
+				System.out.println("❌ 제목은 최소 2자 이상 입력해야 합니다.");
+			}
+
+			String petName;
+			while (true) {
+				System.out.print("🐶 반려동물 이름 (2자 이상): ");
+				petName = br.readLine();
+				if (namePattern.matcher(petName).matches()) {
+					break;
+				}
+				System.out.println("❌ 이름은 최소 2자 이상 입력해야 합니다. (특수문자 및 숫자 불가)");
+			}
+
+			String age;
+			while (true) {
+				System.out.print("🎂 반려동물 나이 (숫자 입력): ");
+				age = br.readLine();
+				if (agePattern.matcher(age).matches()) {
+					break;
+				}
+				System.out.println("❌ 나이는 숫자로 입력해주세요.");
+			}
+
+			String gender;
+			while (true) {
+				System.out.print("🚻 반려동물 성별 (M/F): ");
+				gender = br.readLine().toUpperCase();
+				if (genderPattern.matcher(gender).matches()) {
+					break;
+				}
+				System.out.println("❌ 성별은 'M' 또는 'F'로 입력해주세요.");
+			}
+
+			String content;
+			while (true) {
+				System.out.print("📜 내용 (10자 이상): ");
+				content = br.readLine();
+				if (contentPattern.matcher(content).matches()) {
+					break;
+				}
+				System.out.println("❌ 내용은 최소 10자 이상 입력해야 합니다.");
+			}
+
+			// 📌 게시글 폴더 생성
+			File dir = new File(this.boardPath + "\\" + title);
+			if (!dir.exists()) {
+				dir.mkdirs();
+			}
+
+			int postNum = postsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
+
+			// 📌 입양 게시글 객체 생성
+			Post post = new Post(postNum, this.boardPath, title, "이름: " + petName + "\n나이: " + age + "살\n성별: "
+					+ (gender.equals("M") ? "남아" : "여아") + "\n\n" + content, author);
+
+			// 📌 게시글 저장
+			postsMap.put(postNum, post);
+			savePosts();
+			post.saveAllPosts();
+
+			System.out.println("✅ 입양 게시글이 성공적으로 작성되었습니다.");
+
+		} catch (IOException e) {
+			System.out.println("❌ 입양 게시글 작성에 실패하였습니다.");
+			e.printStackTrace();
 		}
 
 	}
@@ -138,6 +224,16 @@ public class Board implements Serializable {
 		Pattern contentPattern = Pattern.compile("^.{10,}$");
 
 		boolean check = false;
+
+		if (this.adotPetBoard) {
+			writeAdoptPost();
+			return;
+		}
+		if (this.adminBoard && !User.getNowUserId().equals("admin")) {
+			System.out.println("관리자 전용 게시판입니다. 접근 권한이 없습니다.");
+			return;
+		}
+
 		if (author == null) {
 			System.out.println("로그인한 사용자만 게시글을 작성할 수 있습니다.");
 			return;
@@ -145,6 +241,8 @@ public class Board implements Serializable {
 
 		try {
 			while (true) {
+				if (this.adminBoard)
+					continue;
 				System.out.println("익명으로 작성하시겠습니까? (y/n): ");
 				String choice = br.readLine().toUpperCase(); // 대소문자 구분 없이
 
@@ -241,18 +339,6 @@ public class Board implements Serializable {
 			Set<Integer> set = this.postsMap.keySet().stream().sorted().collect(Collectors.toSet());
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd HH.mm.ss");
 
-//			System.out.println("번호\t제목\t작성자\t작성시간\t내용");
-//
-//			for (Integer number : set) {
-//				int postNum = this.postsMap.get(number).getPostNum();
-//				String title = this.postsMap.get(number).getTitle();
-//				String author = this.postsMap.get(number).getAuthor();
-//				String createAt = this.postsMap.get(number).getCreateAt().format(dtf);
-//				String content = this.postsMap.get(number).getContent();
-//
-//				System.out.printf("%d\t%s\t%s\t%s\t%s\n", postNum, title, author, createAt, content);
-//			}
-
 			ois.close();
 			fis.close();
 		} catch (Exception e) {
@@ -263,6 +349,10 @@ public class Board implements Serializable {
 	// 게시글 수정
 	public void editPost() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		if (this.adminBoard && !User.getNowUserId().equals("admin")) {
+			System.out.println("관리자 전용 게시판입니다. 접근 권한이 없습니다.");
+			return;
+		}
 		// 모든 게시글 출력
 		if (postsMap.size() != 0) {
 			printPostList(postsMap);
@@ -299,6 +389,7 @@ public class Board implements Serializable {
 		}
 	}
 
+	// 게시글 삭제
 	public void deletePostDir(int postNum) {
 		File file = new File(boardPath + "\\" + postsMap.get(postNum).getTitle());
 		if (file.exists()) {
@@ -309,6 +400,7 @@ public class Board implements Serializable {
 		}
 	}
 
+	// 재귀적으로 게시글 하위 File 객체들 삭제
 	public void deletePostDirFile(File folder) {
 		File[] files = folder.listFiles();
 		if (files != null) {
@@ -325,6 +417,10 @@ public class Board implements Serializable {
 	// 게시글 삭제
 	public void deletePost() {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		if (this.adminBoard && !User.getNowUserId().equals("admin")) {
+			System.out.println("관리자 전용 게시판입니다. 접근 권한이 없습니다.");
+			return;
+		}
 		// 게시글 목록 출력
 		printPostList(postsMap);
 		if (postsMap.size() != 0) {
@@ -336,7 +432,7 @@ public class Board implements Serializable {
 					System.out.println("해당 번호의 게시글이 존재하지 않습니다.");
 					return;
 				}
-				if(postsMap.get(postNum).getUserId().equals(User.getNowUserId())) {
+				if (postsMap.get(postNum).getUserId().equals(User.getNowUserId())) {
 					deletePostDir(postNum);
 					postsMap.remove(postNum);
 
@@ -365,19 +461,6 @@ public class Board implements Serializable {
 		if (postsMap.size() != 0) {
 			printPostList(postsMap);
 
-//		if (postsMap.isEmpty()) {
-//			System.out.println("등록된 게시글이 없습니다.");
-//			return;
-//		}
-//
-//		// 모든 게시글 보기
-//		System.out.println("=========================게시글 목록=========================");
-//		for (Post post : postsMap.values()) {
-//			System.out.println("번호: " + post.getPostNum() + " | 제목: " + post.getTitle() + " | 내용: " + post.getContent()
-//					+ " | 작성자: " + post.getAuthor());
-//		}
-//		System.out.println("==========================================================");
-
 			// 게시글 자세히 보기
 			System.out.println("자세히 볼 게시글의 번호를 입력해주세요. (취소하려면 0)");
 			System.out.println("선택:");
@@ -395,16 +478,6 @@ public class Board implements Serializable {
 					Post post = postsMap.get(postNum);
 
 					printPostDetail(post);
-//				commentRun();
-
-//				System.out.println("======================== 게시글 상세보기 ========================");
-//				System.out.println("번호: " + post.getPostNum());
-//				System.out.println("제목: " + post.getTitle());
-//				System.out.println("작성자: " + post.getAuthor());
-//				System.out.println("작성일: " + post.getCreateAt());
-//				System.out.println("내용: " + post.getContent());
-//				System.out.println("=============================================================");
-
 				} else {
 					System.out.println("해당 번호의 게시글이 존재하지 않습니다.");
 				}
