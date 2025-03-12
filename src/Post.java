@@ -46,6 +46,17 @@ public class Post implements Serializable {
 		this.userId = Client.getNowUserId();
 		this.commentsMap = new HashMap<Integer, Comment>();
 	}
+	
+	public static String getInput(String message) {// String 값 입력받는 함수
+		System.out.print(message);
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			return br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
 
 	// 댓글 달기
 	public void writeComment() {
@@ -150,7 +161,6 @@ public class Post implements Serializable {
 //				System.out.println("현재 userId: " + this.userId);
 //	            System.out.println("댓글 userId: " + comment.getUserId());
 				if (this.userId != null && this.userId.equals(comment.getUserId())) {
-					System.out.println("댓글을 새로 입력해주세요");
 					System.out.println("댓글을 새로 입력해주세요 (1자 ~ 50자 입력 가능)");
 
 					String newContent = "";
@@ -167,7 +177,7 @@ public class Post implements Serializable {
 							}
 							System.out.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
 						}
-						commentsMap.get(num).setContent(br.readLine());
+						commentsMap.get(num).setContent(newContent);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -300,6 +310,63 @@ public class Post implements Serializable {
 				return;
 			}
 		}
+	}
+	
+	public void adopPetcommentRun() {
+		commentLoad();
+		while (true) {
+			String input = null;
+			System.out.println("1.댓글 작성\t2.댓글 수정\t3.댓글 삭제\t4.정렬\t5.입양 신청\t0.종료");
+			try {
+				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+				input = br.readLine();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			switch (input) {
+			case "1":
+				writeComment();
+				commentPrint();
+				break;
+			case "2":
+				editComment();
+				commentPrint();
+				break;
+			case "3":
+				deleteComment();
+				commentPrint();
+				break;
+			case "4":
+				reverseCommentPrint();
+				break;
+			case "5":
+				writeAdoptPet();
+				break;
+			case "0":
+				commentSave();
+				return;
+			}
+		}
+	}
+
+	public void writeAdoptPet() {
+	    while (true) {
+	        String choice = getInput("입양을 신청하시려면 \'Y\'를 입력해주세요(Y. 신청, N. 취소): ");
+	        if (choice.toUpperCase().equals("Y")) {
+	        	Client.getUserMap().get(getUserId()).adoptPetMap().put(getPostNum() + "/" + Client.getNowUserId(), getTitle()+"/입양승인요청");
+	        	System.out.println(Client.getUserMap().get(getUserId()).adoptPetMap().toString());
+	        	System.out.println(Client.getUserMap().get(getUserId()));
+	            User.getUserMap().get(getUserId()).setAlarm("1");
+	            System.out.println("입양 신청이 완료 되었습니다.");
+	            
+	            return;
+	        } else if (choice.toUpperCase().equals("N")) {
+	            System.out.println("입양 신청을 취소합니다.");
+	            return;
+	        } else {
+	            System.out.println("올바른 값을 입력해주세요(Y. 신청, N. 취소)");
+	        }
+	    }
 	}
 
 	// 게시글 및 댓글 개별 파일 저장

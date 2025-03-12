@@ -1,4 +1,7 @@
 import javax.crypto.Cipher;
+
+
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -10,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+
 public abstract class User implements Serializable {
 	private String userId;
 	private String password;
@@ -17,12 +21,14 @@ public abstract class User implements Serializable {
 	private int wrongCount;
 	private LocalDateTime banTime;
 	private static String nowUserId;
+	private String alarm; //알림 구현
 	// 직렬화 버전을 고정
 	// TODO: 직렬화 버전을 고정하는 이유를 아직 잘 모르겠음. 추후에 공부하고 추가할 것.
 	private static final long serialVersionUID = 1L;
 	// static으로 선언된 userMap은 프로그램 실행시 한번만 생성되고, 모든 객체가 공유한다.
 	private static Map<String, User> userMap = new HashMap<>();
 	protected static Map<String, Board> boardMap = new LinkedHashMap<>();
+	protected  Map<String, String> adoptPet;
 	// 파일경로지정 static 함으로써 객체 생성없이 사용가능
 	public static final String defaultpath = "C:\\AdoptPet"; // 저장할 파일 경로
 	public static final String path = "C:\\AdoptPet\\userList.txt"; // 저장할 파일 경로
@@ -31,7 +37,24 @@ public abstract class User implements Serializable {
 	public static Map<String, User> getUserMap() {
 		return userMap;
 	}
-    public static String hashPassword(String password) {
+	public Map<String, String> adoptPetMap() {
+	  
+	    return adoptPet;
+	}
+	public  void setPetMap(Map<String, String> a) {
+		adoptPet = a;
+	}
+	public static String getInput(String message) {// String 값 입력받는 함수
+		System.out.print(message);
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			return br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+	public static String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hashedBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
@@ -47,6 +70,8 @@ public abstract class User implements Serializable {
 		this.nickName = nickName;
 		this.wrongCount = 0;
 		this.banTime = null;
+		this.alarm="";
+		
 	}
 
 	// 데이터 저장 메서드 (직렬화)
@@ -195,6 +220,7 @@ public abstract class User implements Serializable {
 		System.out.println("현재 로그인 아이디 : " + userId);
 		if (this.userId != null) {
 			user.menu();
+			
 		}
 
 	}
@@ -245,17 +271,21 @@ public abstract class User implements Serializable {
 	            System.out.println(boardName + " 폴더를 생성했습니다.");
 	        }
 
-	        // 게시판이 없으면 새로 추가
-	        if (!boardMap.containsKey(boardName)) {
-	            boardMap.put(boardName, new Board(boardName, boardPath));
-	            System.out.println(boardName + " 게시판을 초기화했습니다.");
-	        }
-	    }
-	    boardSave();
+			// 게시판이 없으면 새로 추가
+			if (!boardMap.containsKey(boardName)) {
+				if (boardName.equals("자유 게시판")) {
+					boardMap.put(boardName, new Board(boardName, boardPath));
+				} // 자유게시판만 일반게시판으로 초기화
+				else {
+					boardMap.put(boardName, new Board(boardName, boardPath, true));
+				}
+				System.out.println(boardName + " 게시판을 초기화했습니다.");
+			}
+		}
+		boardSave();
 
-	    System.out.println("보드 데이터를 불러왔습니다.");
-	}
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													
+		System.out.println("보드 데이터를 불러왔습니다.");
+	}																																																																																																																																																																																																																																																																																																																																																																																																																																																																															
 	
 
 	public abstract void menu();
@@ -310,5 +340,12 @@ public abstract class User implements Serializable {
 	public static void setUserMap(Map<String, User> userMap) {
 		User.userMap = userMap;
 	}
+	public String getAlarm() {
+		return alarm;
+	}
+	public void setAlarm(String alarm) {
+		this.alarm = alarm;
+	}
+
 	
 }
