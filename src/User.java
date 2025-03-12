@@ -215,10 +215,9 @@ public abstract class User implements Serializable {
 			return;
 		}
 
-		this.userId = userId;
-		nowUserId=this.userId;
+		nowUserId=userId;
 		System.out.println("현재 로그인 아이디 : " + userId);
-		if (this.userId != null) {
+		if (nowUserId!= null) {
 			user.menu();
 			
 		}
@@ -226,10 +225,10 @@ public abstract class User implements Serializable {
 	}
 
 	public void logout() {
-		System.out.println(this.userId);
-		if (this.userId != null) {
-			System.out.println(getUserId() + "님이 로그아웃하였습니다.");
-			this.userId = null;
+		System.out.println(nowUserId);
+		if (nowUserId != null) {
+			System.out.println(nowUserId+ "님이 로그아웃하였습니다.");
+			nowUserId= null;
 		} else {
 			System.out.println("잘못된 접근입니다.");
 		}

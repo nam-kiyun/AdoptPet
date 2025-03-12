@@ -191,7 +191,6 @@ public class Admin extends User implements Serializable {
 
     @Override
     public void menu() {
-   	setNowUserId();
     	while (true) {
             System.out.println("\n======== [Admin 메뉴] ========");
             System.out.println("1. 전체 사용자 목록 보기");
