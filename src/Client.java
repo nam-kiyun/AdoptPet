@@ -359,11 +359,25 @@ public class Client extends User implements Serializable{
 	                System.out.println(selectedData[2]);
 	                System.out.println(User.getBoardMap().get(selectedData[2]).toString());
 	                System.out.println(User.getBoardMap().get(selectedData[2]).getPostsMap());
-	                Post post = User.getBoardMap().get(selectedData[2]).getPostsMap().get(selectedData[0]);
+	                User.getBoardMap().get(selectedData[2]).getPostsMap()
+	                .get(Integer.parseInt(selectedData[0]));
 	                
-	                System.out.println(post.toString());
-	                post.setTitle("(입양완료)"+post.getTitle());
-	                post.setAdoptPetCheck(true);
+	               
+	    User.getBoardMap().get(selectedData[2]).getPostsMap().get(Integer.parseInt(selectedData[0])). 
+	    setTitle("(입양완료)"+User.getBoardMap().get(selectedData[2]).getPostsMap().get(Integer.parseInt(selectedData[0])).getTitle()); 
+	                //보드이름(key)로 보드 맵 value인 보드 접근, 포스트 넘버(key)로 포스트맵 vlaue인 포스트 접근
+	                //>> 해당 포스트의 Title를 "(입양완료)"+ 기존제목으로 변경;
+	                
+	                User.getBoardMap().get(selectedData[2]).getPostsMap().
+	                get(Integer.parseInt(selectedData[0])).setAdoptPetCheck(true);
+	                
+	               System.out.println(User.getBoardMap().get(selectedData[2]).getPostsMap().
+	   	                get(Integer.parseInt(selectedData[0])).getTitle()) ;
+	                boardSave();
+	                save();
+	                
+	                
+	                //입양완료된 포스트는 AdoptPetCheck true 로변경, 다시 입양신청 안되도록 일반게시판의 commentRun()를 실행 if문으로
 	                
 	            }
 	        } else {
