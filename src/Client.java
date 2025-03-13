@@ -51,8 +51,8 @@ public class Client extends User implements Serializable {
 	}
 
 	private boolean isValidNickname(String nickname) { // 닉네임 패턴 체크 함수
-		final String NICKNAME_RULES = "^[A-Za-z가-힣][A-Za-z가-힣0-9]{1,7}$";
-		// 영문자나 한글로 시작, 영문자와 한글 그리고 숫자가 포함된, 2~8 길이, 공백과 특수문자는 사용불가
+		final String NICKNAME_RULES = "^(?!익명$)[A-Za-z가-힣][A-Za-z가-힣0-9]{1,7}$";
+		// 영문자나 한글로 시작, 영문자와 한글 그리고 숫자가 포함된, 2~8 길이, 공백과 특수문자는 사용불가,"익명" 허용하지 않음
 		return Pattern.matches(NICKNAME_RULES, nickname);// 패턴에 맞으면 true
 	}
 
