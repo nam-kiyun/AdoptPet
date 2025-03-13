@@ -406,7 +406,7 @@ public class Board implements Serializable {
 					return;
 				}
 				if (postsMap.get(postNum).getUserId().equals(User.getNowUserId())
-						&& User.getNowUserId().equals("admin")) {
+						|| User.getNowUserId().equals("admin")) {
 
 					deletePostDir(postNum);
 					postsMap.remove(postNum);
@@ -528,16 +528,14 @@ public class Board implements Serializable {
 		System.out.println("-".repeat(LINE_LENGTH));
 
 		for(Integer i:list) {
+			
 			System.out.printf("| %-5d | %-15s | %-20s | %-10s |\n",  getPostsMap().get(i).getPostNum(),getPostsMap().get(i).getTitle(),
-					(getPostsMap().get(i).getContent().replace("\n", ", ")+".....").substring(0, 15), 
-					getPostsMap().get(i).getAuthor());
+					(getPostsMap().get(i).getContent().length()<15)?
+							(getPostsMap().get(i).getContent().replace("\n", ", ")+"     ").substring(0, 15)
+							:getPostsMap().get(i).getContent().replace("\n", ", ").substring(0,12)+"...", 
+							getPostsMap().get(i).getAuthor());
 		}
-//		getPostsMap().get(0).getTitle()
-//		
-//		for (Post post : postMap.values()) {
-//			System.out.printf("| %-5d | %-15s | %-20s | %-10s |\n", post.getPostNum(), post.getTitle(),
-//					(post.getContent().replace("\n", ", ")+".....").substring(0, 15), post.getAuthor());
-//		}
+
 
 		System.out.println("=".repeat(LINE_LENGTH));
 
