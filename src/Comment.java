@@ -3,7 +3,6 @@ import java.time.LocalDateTime;
 
 public class Comment implements Serializable {
 	private static int commentCounter = 1; // 메인 댓글 카운터
-	private static int replyCounter = 1; // 대댓글 카운터
 	private int commentNum; // 메인 댓글 번호 (1, 2, 3...)
 	private int parentCommentNum; // 부모 댓글 번호 (대댓글일 경우 저장됨, 일반 댓글이면 0)
 	private String content;
@@ -39,14 +38,6 @@ public class Comment implements Serializable {
 
 	public static void setCommentCounter(int commentCounter) {
 		Comment.commentCounter = commentCounter;
-	}
-
-	public static int getReplyCounter() {
-		return replyCounter;
-	}
-
-	public static void setReplyCounter(int replyCounter) {
-		Comment.replyCounter = replyCounter;
 	}
 
 	public int getCommentNum() {
