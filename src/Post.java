@@ -32,6 +32,7 @@ public class Post implements Serializable {
 	private LocalDateTime createAt;
 	private String userId;
 	private Map<Integer, Comment> commentsMap;
+	private Map<Integer, List<Comment>> repliesMap;
 	private static int postCounter = 1; // 게시글 번호 증가
 	private boolean adoptPetCheck; // 입양완료 여부 체크
 
@@ -44,11 +45,12 @@ public class Post implements Serializable {
 		this.createAt = LocalDateTime.now();
 		this.userId = Client.getNowUserId();
 		this.commentsMap = new HashMap<Integer, Comment>();
+		this.repliesMap = new HashMap<>();
 	}
 
 	// 댓글 달기
 	public void writeComment() {
-
+		String author = Client.getUserMap().get(Client.getNowUserId()).getNickName();
 		boolean check = false;
 
 		// 익명 여부 확인
@@ -67,33 +69,77 @@ public class Post implements Serializable {
 		}
 
 		// 댓글 입력 유효성 검사 (1자 ~ 50자)
-		Pattern pattern = Pattern.compile("^.{1,50}$");
+		Pattern pattern = Pattern.compile("^.{1,20}$");
 		String commentContent;
 
 		while (true) {
-			commentContent = Client.getInput("💬 댓글을 입력해주세요 (1자 ~ 50자 가능): ").trim();
+			commentContent = Client.getInput("💬 댓글을 입력해주세요 (1자 ~ 20자 가능): ");
+			if (pattern.matcher(commentContent).matches()) {
+				break; // 유효한 입력이면 루프 종료
+			}
+			System.err.println("❌ 댓글은 1자 이상, 20자 이하로 입력해주세요.");
+		}
+
+		// 가장 높은 commentNum을 찾아서 자동 증가
+		int newCommentNum = commentsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
+		author = check ? "익명" : author;
+
+		Comment newComment = new Comment(newCommentNum, commentContent, author, LocalDateTime.now());
+		commentsMap.put(newCommentNum, newComment);
+		System.out.println("✅ 댓글이 작성되었습니다.");
+	}
+
+	public void writeReply() {
+		String author = Client.getUserMap().get(Client.getNowUserId()).getNickName();
+		boolean check = false;
+		int parentCommentNum = Integer.parseInt(Client.getInput("📌 대댓글을 달 원본 댓글 번호를 입력해주세요: "));
+
+		if (!commentsMap.containsKey(parentCommentNum)) {
+			System.err.println("⚠ 해당 댓글 번호가 존재하지 않습니다.");
+			return;
+		}
+
+		// 익명 여부 확인
+		while (true) {
+			String choice = Client.getInput("익명으로 작성하시겠습니까? (y/n): ").trim().toUpperCase();
+
+			if (choice.equals("Y")) {
+				check = true;
+				break;
+			} else if (choice.equals("N")) {
+				check = false;
+				break;
+			} else {
+				System.err.println("⚠ 잘못된 입력입니다. 'y' 또는 'n'을 입력해주세요.");
+			}
+		}
+
+		// 댓글 입력 유효성 검사 (1자 ~ 50자)
+		Pattern pattern = Pattern.compile("^.{1,20}$");
+		String commentContent;
+
+		while (true) {
+			commentContent = Client.getInput("💬 댓글을 입력해주세요 (1자 ~ 20자 가능): ");
 			if (pattern.matcher(commentContent).matches()) {
 				break; // 유효한 입력이면 루프 종료
 			}
 			System.err.println("❌ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
 		}
 
-		// 가장 높은 commentNum을 찾아서 자동 증가
-		int newCommentNum = commentsMap.keySet().stream().max(Integer::compareTo).orElse(0) + 1;
-		String author = check ? "익명" : this.author;
+		repliesMap.putIfAbsent(parentCommentNum, new ArrayList<>());
 
-		// 댓글 객체 생성 및 저장
-		Comment comment = new Comment(newCommentNum, commentContent, author, LocalDateTime.now());
-		commentsMap.put(newCommentNum, comment);
-		System.out.println("✅ 댓글이 작성되었습니다.");
+		// 부모 댓글 ID에 해당하는 대댓글 리스트가 없으면 생성
+		int nextReplyNum = repliesMap.get(parentCommentNum).stream().mapToInt(Comment::getCommentNum).max().orElse(0)
+				+ 1;
+
+		author = check ? "익명" : author;
+		Comment newReply = new Comment(nextReplyNum, parentCommentNum, commentContent, author, LocalDateTime.now());
+		repliesMap.get(parentCommentNum).add(newReply);
+		System.out.println("✅ 대댓글이 작성되었습니다.");
 	}
 
 	public void commentPrint() {
-		final int LINE_LENGTH = 75; // 전체 라인 길이
-
-		// 순서가 없는 Set을 Treeset으로 순서대로 정렬
-		Set<Integer> set = new TreeSet<Integer>(this.commentsMap.keySet());
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+		final int LINE_LENGTH = 75;
 
 		System.out.println("\n" + "=".repeat(LINE_LENGTH));
 		String title = "📌[ 댓글 목록 ]📌";
@@ -104,135 +150,194 @@ public class Post implements Serializable {
 		System.out.println("-".repeat(LINE_LENGTH));
 
 		for (Comment comment : commentsMap.values()) {
-			// 내용 길이 제한 (15자 이상 10자까지만 출력 + "...")
-			String content = comment.getContent();
-			if (content.length() > 30) {
-				content = content.substring(0, 10) + "..."; // 길이 제한 적용
+			System.out.printf("| %-6d | %-30s | %-10s | %-20s \n", comment.getCommentNum(), comment.getContent(),
+					comment.getAuthor(), comment.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")));
+
+			// 대댓글 출력 (있으면)
+			if (repliesMap.containsKey(comment.getCommentNum())) {
+				for (Comment reply : repliesMap.get(comment.getCommentNum())) {
+					System.out.printf("| %-6s | %-30s | %-10s | %-20s \n", "",
+							reply.getParentCommentNum() + "-" + reply.getCommentNum() + " : " + reply.getContent(), // ↳
+							reply.getAuthor(), reply.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")));
+				}
 			}
-
-			System.out.printf("| %-6d | %-30s | %-10s | %-20s \n", comment.getCommentNum(), content + ".....",
-					comment.getAuthor(), comment.getCreateAt().format(dtf));
 		}
 
 		System.out.println("=".repeat(LINE_LENGTH));
 	}
 
-	public void reverseCommentPrint() { // 최신순
-		final int LINE_LENGTH = 75; // 전체 라인 길이
-
-		// Set은 순서가 없어서 List로 받아주고 최신순 정렬
-		List<Integer> list = new ArrayList<Integer>(this.commentsMap.keySet());
-		list.sort(Comparator.reverseOrder());
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-
-		System.out.println("\n" + "=".repeat(LINE_LENGTH));
-		String title = "📌[ 댓글 정렬 ]📌";
-		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
-		System.out.println("=".repeat(LINE_LENGTH));
-
-		System.out.printf("| %-6s | %-30s | %-10s | %-20s \n", "번호", "댓글 내용", "작성자", "작성일");
-		System.out.println("-".repeat(LINE_LENGTH));
-
-		for (Integer number : list) {
-			int num = this.commentsMap.get(number).getCommentNum();
-			String comment = this.commentsMap.get(number).getContent();
-			String author = this.commentsMap.get(number).getAuthor();
-			String time = this.commentsMap.get(number).getCreateAt().format(dtf);
-//			System.out.printf("%d\t%s\t%s\t%s\n", num, comment, author, time);
-
-			System.out.printf("| %-6d | %-30s | %-10s | %-20s \n", num, comment, author, time);
-		}
-	}
-
-	// 댓글 수정
 	public void editComment() {
-		int n = 0;
-		Set<Integer> set = commentsMap.keySet();
-		while (true) {
-			try {
-				// 여기
-				n = Integer.parseInt(Client.getInput("> 댓글 번호를 입력해주세요: "));
+		System.out.println("수정할 댓글 번호를 입력해주세요.");
+		String input = Client.getInput("> 수정할 댓글 번호를 입력해주세요 (대댓글은 1-1 형식으로 입력해주세요) : ").trim();
 
-				if (n != 0)
-					break;
-			} catch (NumberFormatException e) {
-				System.err.println("⚠ 댓글 번호는 숫자만 가능합니다!");
-			}
-		}
+		int parentNum = 0;
+		int replyNum = 0;
+		boolean isReply = false;
 
-		boolean edit = false;
-		for (Integer num : set) {
-			if (n == num) {
-				Comment comment = commentsMap.get(num);
-				if (comment == null) {
-					System.err.println("해당 댓글이 존재하지 않습니다.");
+		try {
+			// 1️⃣ **대댓글인지 확인 (1-1 같은 형식)**
+			if (input.contains("-")) {
+				String[] parts = input.split("-");
+
+				// 부모 댓글 번호
+				parentNum = Integer.parseInt(parts[0]);
+				// 대댓글 번호
+				replyNum = Integer.parseInt(parts[1]);
+
+				isReply = true;
+				if (!repliesMap.get(parentNum).get(replyNum).getUserId().equals(User.getNowUserId())
+						|| !User.getNowUserId().equals("admin")) {
+					System.out.println("본인이 작성한 댓글이 아닙니다.");
+					return;
 				}
-				edit = true;
-//	            System.out.println("현재 userId: " + this.userId);
-//	               System.out.println("댓글 userId: " + comment.getUserId());
-				if (this.userId != null && this.userId.equals(comment.getUserId())) {
-					System.out.println("댓글을 새로 입력해주세요 (1자 ~ 50자 입력 가능)");
-
-					String newContent = "";
-					Pattern pattern = Pattern.compile("^.{1,50}$"); // 1자 이상 50자 이하
-
-					while (true) {
-						newContent = Client.getInput("💬 수정할 댓글: ");
-						if (pattern.matcher(newContent).matches())
-							break;
-						System.out.println("⚠ 댓글은 1자 이상, 50자 이하로 입력해주세요.");
+				// 2️⃣ **메인 댓글 (숫자만 입력)**
+				else {
+					parentNum = Integer.parseInt(input);
+					if (!commentsMap.get(parentNum).getUserId().equals(User.getNowUserId())
+							|| !User.getNowUserId().equals("admin")) {
+						System.out.println("본인이 작성한 댓글이 아닙니다.");
+						return;
 					}
-
-					commentsMap.get(num).setContent(newContent);
-					System.out.println("✅ 댓글이 수정되었습니다.");
-					saveAllPosts(); // 변경 사항 저장
-				} else {
-					System.err.println("수정 권한이 없습니다.");
 				}
-				break;
 			}
+		} catch (NumberFormatException e) {
+			System.err.println("⚠ 올바른 형식으로 입력해주세요! (예: 1 또는 1-1)");
+			return;
 		}
-		if (!edit) {
-			System.err.println("잘못된 댓글 번호를 입력했습니다.");
+
+		// **대댓글 수정 로직**
+		if (isReply) {
+			if (repliesMap.containsKey(parentNum)) {
+				List<Comment> replyList = repliesMap.get(parentNum);
+				boolean edited = false;
+
+				for (Comment reply : replyList) {
+					if (reply.getCommentNum() == replyNum) {
+						if (this.userId != null && this.userId.equals(reply.getUserId())) {
+							System.out.println("댓글을 새로 입력해주세요 (1자 ~ 20자 입력 가능)");
+
+							String newContent = "";
+							Pattern pattern = Pattern.compile("^.{1,20}$"); // 1자 이상 50자 이하
+
+							while (true) {
+								newContent = Client.getInput("💬 수정할 댓글: ");
+								if (pattern.matcher(newContent).matches())
+									break;
+								System.out.println("⚠ 댓글은 1자 이상, 20자 이하로 입력해주세요.");
+							}
+
+							reply.setContent(newContent);
+							System.out.println("✅ 대댓글이 수정되었습니다.");
+							edited = true;
+							break;
+						} else {
+							System.err.println("⚠ 수정 권한이 없습니다.");
+							return;
+						}
+					}
+				}
+
+				if (!edited) {
+					System.err.println("⚠ 해당 대댓글이 존재하지 않습니다.");
+				}
+			} else {
+				System.err.println("⚠ 해당 부모 댓글에 대댓글이 없습니다.");
+			}
+			return;
+		}
+
+		// **메인 댓글 수정 로직**
+		if (commentsMap.containsKey(parentNum)) {
+			Comment comment = commentsMap.get(parentNum);
+			if (this.userId != null && this.userId.equals(comment.getUserId())) {
+				System.out.println("댓글을 새로 입력해주세요 (1자 ~ 20자 입력 가능)");
+
+				String newContent = "";
+				Pattern pattern = Pattern.compile("^.{1,20}$"); // 1자 이상 50자 이하
+
+				while (true) {
+					newContent = Client.getInput("💬 수정할 댓글: ");
+					if (pattern.matcher(newContent).matches())
+						break;
+					System.out.println("⚠ 댓글은 1자 이상, 20자 이하로 입력해주세요.");
+				}
+
+				comment.setContent(newContent);
+				System.out.println("✅ 댓글이 수정되었습니다.");
+			} else {
+				System.err.println("⚠ 수정 권한이 없습니다.");
+			}
+		} else {
+			System.err.println("⚠ 해당 번호의 댓글이 존재하지 않습니다.");
 		}
 	}
 
-	// 댓글 삭제
 	public void deleteComment() {
-		Set<Integer> set = commentsMap.keySet();
-		Iterator<Integer> it = set.iterator();
-		System.out.println("댓글 번호를 입력해주세요.");
+		System.out.println("삭제할 댓글 번호를 입력해주세요.");
+		String input = Client.getInput("> 삭제할 댓글 번호를 입력해주세요 (대댓글은 1-1 형식으로 입력해주세요 : ").trim();
 
-		int n = 0;
-		while (true) {
-			try {
-				n = Integer.parseInt(Client.getInput("> 댓글 번호를 입력해주세요: "));
-				if (n != 0)
-					break;
-			} catch (NumberFormatException e) {
-				System.err.println("⚠ 댓글 번호는 숫자만 가능합니다!");
+		int parentNum = 0;
+		int replyNum = 0;
+		boolean isReply = false;
+
+		try {
+			// 1️⃣ **대댓글인지 확인 (1-1 같은 형식)**
+			if (input.contains("-")) {
+				String[] parts = input.split("-");
+
+				// 부모 댓글 번호
+				parentNum = Integer.parseInt(parts[0]);
+				// 대댓글 번호
+				replyNum = Integer.parseInt(parts[1]);
+
+				isReply = true;
 			}
+			// 2️⃣ **메인 댓글 (숫자만 입력)**
+			else {
+				parentNum = Integer.parseInt(input);
+			}
+		} catch (NumberFormatException e) {
+			System.err.println("⚠ 올바른 형식으로 입력해주세요! (예: 1 또는 1-1)");
+			return;
 		}
 
-		boolean delete = false;
-		// Iterator를 통해 순회 돌아서 일치할 경우 삭제
-		// 그냥 Set상태로 for문 돌게 되면 Collection 오류 발생
-		while (it.hasNext()) {
-			int num = it.next();
-			if (n == num) {
-				Comment comment = commentsMap.get(num);
-				delete = true;
-				if (this.userId != null && this.userId.equals(comment.getUserId())) {
-					it.remove();
-					System.out.println("댓글이 삭제되었습니다.");
-				} else {
-					System.err.println("수정 권한이 없습니다.");
+		// **대댓글 삭제 로직**
+		if (isReply) {
+			if (repliesMap.containsKey(parentNum)) {
+				List<Comment> replyList = repliesMap.get(parentNum);
+				Iterator<Comment> iterator = replyList.iterator();
+				boolean deleted = false;
+
+				while (iterator.hasNext()) {
+					Comment reply = iterator.next();
+					if (reply.getCommentNum() == replyNum) {
+						iterator.remove(); // 해당 대댓글 삭제
+						System.out.println("✅ 대댓글 " + parentNum + "-" + replyNum + "이 삭제되었습니다.");
+						deleted = true;
+						break;
+					}
 				}
-				break;
+
+				if (!deleted) {
+					System.err.println("⚠ 해당 대댓글이 존재하지 않습니다.");
+				}
+			} else {
+				System.err.println("⚠ 해당 부모 댓글에 대댓글이 없습니다.");
 			}
+			return;
 		}
-		if (!delete) {
-			System.err.println("잘못된 댓글 번호를 입력하였습니다.");
+
+		// **메인 댓글 삭제 로직**
+		if (commentsMap.containsKey(parentNum)) {
+			commentsMap.remove(parentNum);
+			System.out.println("✅ 댓글 " + parentNum + "이 삭제되었습니다.");
+
+			if (repliesMap.containsKey(parentNum)) {
+				repliesMap.remove(parentNum);
+				System.out.println("📌 해당 댓글에 달린 모든 대댓글이 삭제되었습니다.");
+			}
+		} else {
+			System.err.println("⚠ 해당 번호의 댓글이 존재하지 않습니다.");
 		}
 	}
 
@@ -253,6 +358,32 @@ public class Post implements Serializable {
 			oos = new ObjectOutputStream(bos);
 
 			oos.writeObject(commentsMap);
+
+			oos.close();
+			bos.close();
+			fos.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void replySave() {
+		File dir = new File(this.postPath);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		File file = new File(this.postPath + "\\replies.txt");
+
+		FileOutputStream fos = null;
+		BufferedOutputStream bos = null;
+		ObjectOutputStream oos = null;
+
+		try {
+			fos = new FileOutputStream(file);
+			bos = new BufferedOutputStream(fos);
+			oos = new ObjectOutputStream(bos);
+
+			oos.writeObject(repliesMap);
 
 			oos.close();
 			bos.close();
@@ -287,10 +418,36 @@ public class Post implements Serializable {
 		}
 	}
 
+	public void replyLoad() {
+		File commentsFile = new File(this.postPath + "\\replies.txt");
+		if (!commentsFile.exists())
+			return;
+		try {
+			FileInputStream fis = new FileInputStream(commentsFile);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			ObjectInputStream ois = new ObjectInputStream(bis);
+
+			HashMap<Integer, List<Comment>> map = (HashMap) ois.readObject();
+			if (map != null) {
+				// 불러온 map데이터를 commnetsMap에 병합
+				this.repliesMap.putAll(map);
+				// 가장 큰 commentNum을 찾아
+				int maxNum = map.keySet().stream().max(Integer::compareTo).orElse(0);
+				Comment.setCommentCounter(maxNum + 1);
+				commentPrint();
+			}
+			ois.close();
+			bis.close();
+			fis.close();
+		} catch (Exception e) {
+		}
+	}
+
 	public void commentRun() {
 		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
 
 		commentLoad();
+		replyLoad();
 		while (true) {
 			System.out.println("\n" + "=".repeat(LINE_LENGTH));
 			String title = "📌 [ 댓글 메뉴 ] 📌";
@@ -298,8 +455,8 @@ public class Post implements Serializable {
 			System.out.println("=".repeat(LINE_LENGTH));
 
 			// 메뉴 표시
-			System.out.printf("| %-15s | %-15s | %-15s | %-15s | %-5s |\n", "1. 댓글 작성", "2. 댓글 수정", "3. 댓글 삭제", "4. 정렬",
-					"0. 종료");
+			System.out.printf("| %-12s | %-12s | %-12s | %-12s | %-12s | %-5s |\n", "1. 댓글 작성", "2. 대댓글 작성", "3. 댓글 삭제",
+					"4. 댓글 수정", "5. 게시글 출력", "0. 종료");
 			System.out.println("-".repeat(LINE_LENGTH));
 
 			String choice = Client.getInput("선택: ");
@@ -308,20 +465,33 @@ public class Post implements Serializable {
 			case "1":
 				writeComment();
 				commentPrint();
+				commentSave();
+				replySave();
 				break;
 			case "2":
-				editComment();
+				writeReply();
 				commentPrint();
+				commentSave();
+				replySave();
 				break;
 			case "3":
 				deleteComment();
 				commentPrint();
+				commentSave();
+				replySave();
 				break;
 			case "4":
-				reverseCommentPrint();
+				editComment();
+				commentPrint();
+				commentSave();
+				replySave();
+				break;
+			case "5":
+				saveAllPosts();
 				break;
 			case "0":
 				commentSave();
+				replySave();
 				return;
 			}
 		}
@@ -331,10 +501,11 @@ public class Post implements Serializable {
 		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
 
 		commentLoad();
+		replyLoad();
 		while (true) {
 			System.out.println("\n📌 [ 입양 게시글 댓글 메뉴 ]");
-			System.out.printf("%-10s  %-10s  %-10s  %-10s %-10s %-10s \n", "1. 댓글 작성", "2. 댓글 수정", "3. 댓글 삭제", "4. 정렬",
-					"5.입양 신청", "0.종료");
+			System.out.printf("%-10s  %-10s  %-10s  %-10s %-10s %-10s %-10s \n", "1. 댓글 작성", "2. 대댓글 작성", "3. 댓글 삭제",
+					"4. 댓글 수정", "5. 입양 신청", "6. 게시글 저장", "0.종료");
 			System.out.println();
 
 			String input = Client.getInput("선택: ").trim();
@@ -344,20 +515,32 @@ public class Post implements Serializable {
 			case "1":
 				writeComment();
 				commentPrint();
+				commentSave();
+				replySave();
 				break;
 			case "2":
-				editComment();
+				writeReply();
 				commentPrint();
+				commentSave();
+				replySave();
 				break;
 			case "3":
 				deleteComment();
 				commentPrint();
+				commentSave();
+				replySave();
 				break;
 			case "4":
-				reverseCommentPrint();
+				editComment();
+				commentPrint();
+				commentSave();
+				replySave();
 				break;
 			case "5":
 				writeAdoptPet();
+				break;
+			case "6":
+				saveAllPosts();
 				break;
 			case "0":
 				commentSave();
@@ -389,7 +572,6 @@ public class Post implements Serializable {
 		}
 	}
 
-	// 게시글 및 댓글 개별 파일 저장
 	public void saveAllPosts() {
 		String path = "C:\\AdoptPet\\download\\";
 		File directory = new File(path);
@@ -397,9 +579,7 @@ public class Post implements Serializable {
 		// 폴더 없으면 생성
 		if (!directory.exists()) {
 			if (directory.mkdir()) {
-				System.out.println("폴더 생성 완료: " + directory);
 			} else {
-				System.err.println("폴더 생성 실패");
 				return;
 			}
 		}
@@ -407,9 +587,9 @@ public class Post implements Serializable {
 		String filePath = path + "post_" + postNum + ".txt";
 
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
-			writer.println("==================================================");
+			writer.println("==============================");
 			writer.println("                    📌 게시글                     ");
-			writer.println("==================================================");
+			writer.println("==============================");
 			writer.printf("📌 번호   : %d%n", postNum);
 			writer.printf("📌 제목   : %s%n", title);
 			writer.printf("📌 작성자 : %s%n", author);
@@ -422,9 +602,9 @@ public class Post implements Serializable {
 			if (commentsMap.isEmpty()) {
 				writer.println("💬 댓글: 등록된 댓글이 없습니다.");
 			} else {
-				writer.println("\n==================================================");
+				writer.println("\n==============================");
 				writer.println("                   💬 댓글 목록                   ");
-				writer.println("==================================================");
+				writer.println("==============================");
 
 				for (Comment comment : commentsMap.values()) {
 					writer.println("--------------------------------------------------");
@@ -434,15 +614,27 @@ public class Post implements Serializable {
 							comment.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 					writer.println("💬 내용:");
 					writer.println(comment.getContent());
+
+					// ✅ 대댓글 저장 (있으면)
+					if (repliesMap.containsKey(comment.getCommentNum())) {
+						for (Comment reply : repliesMap.get(comment.getCommentNum())) {
+							writer.println("--------------------------------------------------");
+							writer.printf("↳ 💬 대댓글 번호 : %d-%d%n", reply.getParentCommentNum(), reply.getCommentNum());
+							writer.printf("↳ 💬 작성자      : %s%n", reply.getAuthor());
+							writer.printf("↳ 💬 작성일      : %s%n",
+									reply.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+							writer.println("↳ 💬 내용:");
+							writer.println(reply.getContent());
+						}
+					}
 					writer.println("--------------------------------------------------");
 				}
 			}
-
-			// System.out.println("✅ 게시글과 댓글이 저장되었습니다: " + filePath);
 		} catch (IOException e) {
 			System.err.println("파일 저장 중 오류가 발생했습니다.");
 			e.printStackTrace();
 		}
+		System.out.println("게시글이 파일로 저장되었습니다.");
 	}
 
 	public int getPostNum() {
