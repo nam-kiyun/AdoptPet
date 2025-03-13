@@ -49,6 +49,10 @@ public class Admin extends User implements Serializable {
 		System.out.println("=".repeat(LINE_LENGTH));
 
 		if (userMap.containsKey(userId)) {
+			if (userMap.get(userId).getUserId().equals("admin")) {
+				System.out.println("admin계정은 삭제 할 수 없습니다");
+				return;
+			}
 			userMap.remove(userId);
 			User.save(); // 삭제 후 자동 저장
 			System.out.println(userId + " 사용자가 삭제되었습니다.");
