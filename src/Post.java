@@ -293,7 +293,7 @@ public class Post implements Serializable {
 		commentLoad();
 		while (true) {
 			System.out.println("\n" + "=".repeat(LINE_LENGTH));
-			String title = "📌 [ 댓글 목록 ] 📌";
+			String title = "📌 [ 댓글 메뉴 ] 📌";
 			System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
 			System.out.println("=".repeat(LINE_LENGTH));
 

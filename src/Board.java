@@ -116,7 +116,7 @@ public class Board implements Serializable {
 //			}
 
 			System.out.printf("| %-5d | %-15s | %-20s | %-10s |\n", post.getPostNum(), post.getTitle(),
-					post.getContent().replace("\n", ", ").substring(0, 15) + ".....", post.getAuthor());
+					(post.getContent().replace("\n", ", ")+".....").substring(0, 15), post.getAuthor());
 		}
 		System.out.println("=".repeat(LINE_LENGTH));
 
