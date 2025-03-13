@@ -167,7 +167,6 @@ public class Post implements Serializable {
 	}
 
 	public void editComment() {
-		System.out.println("수정할 댓글 번호를 입력해주세요.");
 		String input = Client.getInput("> 수정할 댓글 번호를 입력해주세요 (대댓글은 1-1 형식으로 입력해주세요) : ").trim();
 
 		int parentNum = 0;
@@ -185,19 +184,20 @@ public class Post implements Serializable {
 				replyNum = Integer.parseInt(parts[1]);
 
 				isReply = true;
-				if (!repliesMap.get(parentNum).get(replyNum).getUserId().equals(User.getNowUserId())) {
+				if (!repliesMap.get(parentNum).get(replyNum-1).getUserId().equals(User.getNowUserId())) {
 					System.out.println("본인이 작성한 댓글이 아닙니다.");
 					return;
 				}
-				// 2️⃣ **메인 댓글 (숫자만 입력)**
-				else {
-					parentNum = Integer.parseInt(input);
-					if (!commentsMap.get(parentNum).getUserId().equals(User.getNowUserId())) {
-						System.out.println("본인이 작성한 댓글이 아닙니다.");
-						return;
-					}
+			}
+			// 2️⃣ **메인 댓글 (숫자만 입력)**
+			else {
+				parentNum = Integer.parseInt(input);
+				if (!commentsMap.get(parentNum).getUserId().equals(User.getNowUserId())) {
+					System.out.println("본인이 작성한 댓글이 아닙니다.");
+					return;
 				}
 			}
+
 		} catch (NumberFormatException e) {
 			System.err.println("⚠ 올바른 형식으로 입력해주세요! (예: 1 또는 1-1)");
 			return;
@@ -211,7 +211,6 @@ public class Post implements Serializable {
 
 				for (Comment reply : replyList) {
 					if (reply.getCommentNum() == replyNum) {
-						if (this.userId != null && this.userId.equals(reply.getUserId())) {
 							System.out.println("댓글을 새로 입력해주세요 (1자 ~ 20자 입력 가능)");
 
 							String newContent = "";
@@ -228,13 +227,8 @@ public class Post implements Serializable {
 							System.out.println("✅ 대댓글이 수정되었습니다.");
 							edited = true;
 							break;
-						} else {
-							System.err.println("⚠ 수정 권한이 없습니다.");
-							return;
-						}
 					}
 				}
-
 				if (!edited) {
 					System.err.println("⚠ 해당 대댓글이 존재하지 않습니다.");
 				}
@@ -247,7 +241,6 @@ public class Post implements Serializable {
 		// **메인 댓글 수정 로직**
 		if (commentsMap.containsKey(parentNum)) {
 			Comment comment = commentsMap.get(parentNum);
-			if (this.userId != null && this.userId.equals(comment.getUserId())) {
 				System.out.println("댓글을 새로 입력해주세요 (1자 ~ 20자 입력 가능)");
 
 				String newContent = "";
@@ -262,18 +255,15 @@ public class Post implements Serializable {
 
 				comment.setContent(newContent);
 				System.out.println("✅ 댓글이 수정되었습니다.");
-			} else {
-				System.err.println("⚠ 수정 권한이 없습니다.");
-			}
 		} else {
 			System.err.println("⚠ 해당 번호의 댓글이 존재하지 않습니다.");
 		}
 	}
 
-	//댓글 삭제
+	// 댓글 삭제
 	public void deleteComment() {
 		System.out.println("삭제할 댓글 번호를 입력해주세요.");
-		String input = Client.getInput("> 삭제할 댓글 번호를 입력해주세요 (대댓글은 1-1 형식으로 입력해주세요 : ").trim();
+		String input = Client.getInput("> 삭제할 댓글 번호를 입력해주세요 (대댓글은 1-1 형식으로 입력해주세요) : ").trim();
 
 		int parentNum = 0;
 		int replyNum = 0;
@@ -290,20 +280,23 @@ public class Post implements Serializable {
 				replyNum = Integer.parseInt(parts[1]);
 
 				isReply = true;
-				if (!repliesMap.get(parentNum).get(replyNum).getUserId().equals(User.getNowUserId())
-						|| !User.getNowUserId().equals("admin")) {
+				if (!repliesMap.get(parentNum).get(replyNum-1).getUserId().equals(User.getNowUserId())
+						&& !User.getNowUserId().equals("admin")) {
 					System.out.println("본인이 작성한 댓글이 아닙니다.");
 					return;
 				}
 			}
-			// 2️⃣ **메인 댓글 (숫자만 입력)**
+			// 2️ **메인 댓글 (숫자만 입력)**
 			else {
 				parentNum = Integer.parseInt(input);
-				
+				System.out.println(commentsMap.get(parentNum).getUserId());
+				System.out.println(User.getNowUserId());
 				if (!commentsMap.get(parentNum).getUserId().equals(User.getNowUserId())
-						|| !User.getNowUserId().equals("admin")) {
+						&& !User.getNowUserId().equals("admin")) {
 					System.out.println("본인이 작성한 댓글이 아닙니다.");
 					return;
+				} else {
+					
 				}
 			}
 		} catch (NumberFormatException e) {
@@ -419,7 +412,6 @@ public class Post implements Serializable {
 				// 가장 큰 commentNum을 찾아
 				int maxNum = map.keySet().stream().max(Integer::compareTo).orElse(0);
 				Comment.setCommentCounter(maxNum + 1);
-				commentPrint();
 			}
 			ois.close();
 			bis.close();
@@ -444,7 +436,6 @@ public class Post implements Serializable {
 				// 가장 큰 commentNum을 찾아
 				int maxNum = map.keySet().stream().max(Integer::compareTo).orElse(0);
 				Comment.setCommentCounter(maxNum + 1);
-				commentPrint();
 			}
 			ois.close();
 			bis.close();
@@ -458,6 +449,7 @@ public class Post implements Serializable {
 
 		commentLoad();
 		replyLoad();
+		commentPrint();
 		while (true) {
 			System.out.println("\n" + "=".repeat(LINE_LENGTH));
 			String title = "📌 [ 댓글 메뉴 ] 📌";
@@ -465,7 +457,7 @@ public class Post implements Serializable {
 			System.out.println("=".repeat(LINE_LENGTH));
 
 			// 메뉴 표시
-			System.out.printf("| %-12s | %-12s | %-12s | %-12s | %-12s | %-5s |\n", "1. 댓글 작성", "2. 대댓글 작성", "3. 댓글 삭제",
+			System.out.printf("| %-8s | %-8s | %-8s | %-8s | %-8s | %-5s |\n", "1. 댓글 작성", "2. 대댓글 작성", "3. 댓글 삭제",
 					"4. 댓글 수정", "5. 게시글 출력", "0. 종료");
 			System.out.println("-".repeat(LINE_LENGTH));
 
@@ -512,11 +504,15 @@ public class Post implements Serializable {
 
 		commentLoad();
 		replyLoad();
+		commentPrint();
 		while (true) {
-			System.out.println("\n📌 [ 입양 게시글 댓글 메뉴 ]");
-			System.out.printf("%-10s  %-10s  %-10s  %-10s %-10s %-10s %-10s \n", "1. 댓글 작성", "2. 대댓글 작성", "3. 댓글 삭제",
+			System.out.println("=".repeat(LINE_LENGTH));
+			String title = "📌 [ 입양 게시글 댓글 메뉴 ]";
+			System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+			System.out.println("=".repeat(LINE_LENGTH));
+			System.out.printf("|%-7s |%-7s |%-7s |%-7s |%-7s |%-7s |%-4s| \n", "1. 댓글 작성", "2. 대댓글 작성", "3. 댓글 삭제",
 					"4. 댓글 수정", "5. 입양 신청", "6. 게시글 저장", "0.종료");
-			System.out.println();
+			System.out.println("=".repeat(LINE_LENGTH));
 
 			String input = Client.getInput("선택: ").trim();
 			System.out.println("-".repeat(LINE_LENGTH));
