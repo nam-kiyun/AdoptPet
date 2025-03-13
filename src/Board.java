@@ -336,6 +336,85 @@ public class Board implements Serializable {
 			System.out.println("관리자 전용 게시판입니다. 접근 권한이 없습니다.");
 			return;
 		}
+		if(this.adotPetBoard) {
+			if(postsMap.size() != 0) {
+				reversePrintPostList(postsMap);
+
+				int postNum = Integer.parseInt(Client.getInput("몇 번 게시글을 수정하시겠습니까? "));
+
+				if (!postsMap.containsKey(postNum)) {
+					System.out.println("해당 게시글이 존재하지 않습니다.");
+					return;
+				}
+				Post post = postsMap.get(postNum);
+				if (!post.getUserId().equals(Client.getNowUserId())) {
+					System.out.println("작성자만 게시글을 수정할 수 있습니다.");
+					return;
+				}
+				final int LINE_LENGTH = 75;
+				Pattern titlePattern = Pattern.compile("^.{2,}$"); // 2자 이상
+				Pattern contentPattern = Pattern.compile("^.{10,}$"); // 10자 이상
+				Pattern namePattern = Pattern.compile("^[가-힣a-zA-Z]{2,}$"); // 한글 또는 영문, 최소 2자 이상
+				Pattern agePattern = Pattern.compile("^[0-9]{1,2}$"); // 1~3자리 숫자
+				Pattern genderPattern = Pattern.compile("^[MFmf]$"); // M 또는 F
+
+				System.out.println("\n" + "=".repeat(LINE_LENGTH));
+				String title1 = "🐾[  입양 게시글 작성  ]🐾";
+				System.out.printf("%" + ((LINE_LENGTH + title1.length()) / 2) + "s\n", title1);
+				System.out.println("=".repeat(LINE_LENGTH));
+
+				String title;
+				while (true) {
+					title = Client.getInput("📌 제목 (2자 이상): ");
+					if (titlePattern.matcher(title).matches()) {
+						break;
+					}
+					System.out.println("❌ 제목은 최소 2자 이상 입력해야 합니다.");
+				}
+
+				String petName;
+				while (true) {
+					petName = Client.getInput("🐶 반려동물 이름 (2자 이상): ");
+					if (namePattern.matcher(petName).matches()) {
+						break;
+					}
+					System.out.println("❌ 이름은 최소 2자 이상 입력해야 합니다. (특수문자 및 숫자 불가)");
+				}
+
+				String age;
+				while (true) {
+					age = Client.getInput("🎂 반려동물 나이 (숫자 입력): ");
+
+					if (agePattern.matcher(age).matches()) {
+						break;
+					}
+					System.out.println("❌ 나이는 숫자로 입력해주세요.");
+				}
+
+				String gender;
+				while (true) {
+					gender = Client.getInput("🚻 반려동물 성별 (M/F): ");
+					if (genderPattern.matcher(gender).matches()) {
+						break;
+					}
+					System.out.println("❌ 성별은 'M' 또는 'F'로 입력해주세요.");
+				}
+
+				String content;
+				while (true) {
+					content = Client.getInput("📜 내용 (10자 이상): ");
+					if (contentPattern.matcher(content).matches()) {
+						break;
+					}
+					System.out.println("❌ 내용은 최소 10자 이상 입력해야 합니다.");
+				}
+
+				post.setTitle(title);
+				post.setContent("이름: " + petName + "\n나이: " + age + "살\n성별: " + (gender.equals("M") ? "남아" : "여아") + "\n\n" + content);
+				savePosts();
+				return;
+			}
+		}
 		// 모든 게시글 출력
 		if (postsMap.size() != 0) {
 			reversePrintPostList(postsMap);
