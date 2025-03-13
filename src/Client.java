@@ -56,7 +56,7 @@ public class Client extends User implements Serializable {
 		return Pattern.matches(NICKNAME_RULES, nickname);// 패턴에 맞으면 true
 	}
 
-	public void register() {// todo 아이디 저장, 비밀번호 저장, 닉네임저장, 기존 아이디비교
+	public void register() {
 		Set<String> idSet = super.getUserMap().keySet(); // 기존 id 목록 set저장
 		String userId, password, nickName; // 입력 받을 id, password, nickName
 		while (true) { // id 입력 반복문
@@ -68,7 +68,7 @@ public class Client extends User implements Serializable {
 					break;
 				}
 			} else {// 형식에 맞지 않을 경우
-				System.out.println("아이디는 영문자로 시작해야 하며, 영문자와 숫자를 포함하고, 길이는 8~15자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
+				System.out.println("아이디는 영문자로 시작해야 하며, 영문자와 숫자를 포함하고, \n길이는 8~15자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
 			}
 
 		}
@@ -91,7 +91,8 @@ public class Client extends User implements Serializable {
 					break;// nickName이 패턴에 맞고 중복되지 않으면 종료
 				}
 			} else {// 형식에 맞지 않을 경우
-				System.out.println("닉네임은 영문자 또는 한글로 시작해야 하며, 영문자, 한글, 숫자를 포함하고, \n길이는 2~8자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
+				System.out.println(
+						"닉네임은 영문자 또는 한글로 시작해야 하며, 영문자, 한글, 숫자를 포함하고, \n길이는 2~8자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
 			}
 		}
 		super.getUserMap().put(userId, new Client(userId, User.hashPassword(password), nickName));
@@ -368,66 +369,71 @@ public class Client extends User implements Serializable {
 			// 저장된 내용 출력
 			if (!list.isEmpty()) {
 				final int LINE_LENGTH = 75; // 출력 라인 길이 통일
-
 				System.out.println("=".repeat(LINE_LENGTH));
-				int j=0;
+				int j = 0;
 				for (String[] data : list) {
-					System.out.println(++j+"번. "+data[2] + "의 게시글 "+ data[0] + " 을 "+ data[1] + "님이 " + data[3] + " 했습니다.");
+					System.out.println(
+							++j + "번. " + data[2] + "의 게시글 " + data[0] + " 을 " + data[1] + "님이 " + data[3] + " 했습니다.");
 				}
 				System.out.println("=".repeat(LINE_LENGTH));
-				while(true) {
-				String choice = getInput("1. 입양 확정, 2. 입양 취소, 0. 뒤로가기");
+				while (true) {
+					String choice = getInput("1. 입양 확정, 2. 입양 취소, 0. 뒤로가기");
 
-				switch (choice) {
-				case "1":
-					while (true) {
-						int selectedPostNum = Integer.parseInt(getInput("입양 확정할 게시글 번호를 입력해주세요"));
+					switch (choice) {
+					case "1":
+						while (true) {
+							int selectedPostNum = Integer.parseInt(getInput("입양 확정할 게시글 번호를 입력해주세요"));
 //					
-						if (selectedPostNum>list.size()||selectedPostNum<0) {
-							System.out.println("입력하신 게시글 번호가 목록에 없습니다. 다시 확인해주세요.");
-						} else {
-							// 해당 게시글 번호로 입양 확정 처리
-							String[] selectedData = list.get(selectedPostNum-1);
-							System.out.println(selectedData[1] + "님이 승인한 입양이 확정되었습니다.");
+							if (selectedPostNum > list.size() || selectedPostNum < 0) {
+								System.out.println("입력하신 게시글 번호가 목록에 없습니다. 다시 확인해주세요.");
+							} else {
+								// 해당 게시글 번호로 입양 확정 처리
+								String[] selectedData = list.get(selectedPostNum - 1);
+								System.out.println(selectedData[1] + "님이 승인한 입양이 확정되었습니다.");
+								
+								User.getBoardMap().get(selectedData[2]).loadPost();//포스트 맵로드
+								
+								User.getBoardMap().get(selectedData[2]).getPostsMap()
+										.get(Integer.parseInt(selectedData[0]))
+										.setTitle("(입양완료)" + User.getBoardMap().get(selectedData[2]).getPostsMap()
+												.get(Integer.parseInt(selectedData[0])).getTitle());
+								// 보드이름(key)로 보드 맵 value인 보드 접근, 포스트 넘버(key)로 포스트맵 vlaue인 포스트 접근
+								// >> 해당 포스트의 Title를 "(입양완료)"+ 기존제목으로 변경;
 
-							User.getBoardMap().get(selectedData[2]).getPostsMap().get(Integer.parseInt(selectedData[0]))
-									.setTitle("(입양완료)" + User.getBoardMap().get(selectedData[2]).getPostsMap()
-											.get(Integer.parseInt(selectedData[0])).getTitle());
-							// 보드이름(key)로 보드 맵 value인 보드 접근, 포스트 넘버(key)로 포스트맵 vlaue인 포스트 접근
-							// >> 해당 포스트의 Title를 "(입양완료)"+ 기존제목으로 변경;
-							
-							User.getBoardMap().get(selectedData[2]).getPostsMap().get(Integer.parseInt(selectedData[0]))
-									.setAdoptPetCheck(true);
-							// 입양완료된 포스트는 AdoptPetCheck true 로변경, 다시 입양신청 안되도록 일반게시판의 commentRun()를 실행 if문으로
-							adoptPetMap.remove(selectedData[0] + "/" + selectedData[1]);
-							return;
+								User.getBoardMap().get(selectedData[2]).getPostsMap()
+										.get(Integer.parseInt(selectedData[0])).setAdoptPetCheck(true);
+								// 입양완료된 포스트는 AdoptPetCheck true 로변경, 다시 입양신청 안되도록 일반게시판의 commentRun()를 실행 if문으로
+
+								adoptPetMap.remove(selectedData[0] + "/" + selectedData[1]);
+								User.getBoardMap().get(selectedData[2]).savePosts(); // 포스트맵세이브
+								return;
+							}
 						}
-			}
 
-				case "2":
-					while (true) {
-						int selectedPostNum1 =Integer.parseInt(getInput("입양 취소할 게시글 번호를 입력해주세요"));
+					case "2":
+						while (true) {
+							int selectedPostNum1 = Integer.parseInt(getInput("입양 취소할 게시글 번호를 입력해주세요"));
 //					
-						if (selectedPostNum1>list.size()||selectedPostNum1<0) {
-							System.out.println("입력하신 게시글 번호가 목록에 없습니다. 다시 확인해주세요.");
-						} else {
+							if (selectedPostNum1 > list.size() || selectedPostNum1 < 0) {
+								System.out.println("입력하신 게시글 번호가 목록에 없습니다. 다시 확인해주세요.");
+							} else {
 
-							String[] selectedData = list.get(selectedPostNum1-1);
+								String[] selectedData = list.get(selectedPostNum1 - 1);
 //							
-							adoptPetMap.remove(selectedData[0] + "/" + selectedData[1]);
-							System.out.println(selectedData[1]+"님의 입양요청이 성공적으로 취소되었습니다.");
+								adoptPetMap.remove(selectedData[0] + "/" + selectedData[1]);
+								System.out.println(selectedData[1] + "님의 입양요청이 성공적으로 취소되었습니다.");
 
-							return;
+								return;
+							}
 						}
+
+					case "0":
+
+						return;
+
+					default:
+						break;
 					}
-
-				case "0":
-
-					return;
-
-				default:
-					break;
-				}
 				}
 			} else {
 				System.out.println("입양 확정 목록이 비어 있습니다.");
@@ -438,7 +444,7 @@ public class Client extends User implements Serializable {
 	}
 
 	public static void run() {
-		// AnimalAsciiArt.display();
+		 //AnimalAsciiArt.display();
 
 		final int LINE_LENGTH = 75; // 전체 라인 길이
 
