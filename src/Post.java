@@ -567,7 +567,11 @@ public class Post implements Serializable {
 				// put를 getUserId() post작성자 user 객체의 adoptPetMap()
 				User.getUserMap().get(getUserId()).setAlarm("1");
 				System.out.println("입양 신청이 완료 되었습니다.");
-
+				
+				Client.getUserMap().get(getUserId()).getBoardMap().
+				get(this.postPath.replace(this.getTitle(), "").
+						replace(Client.defaultpath, "").replace("\\", "")).savePosts(); //포스트맵 세이브
+			
 				return;
 			} else if (choice.toUpperCase().equals("N")) {
 				System.out.println("입양 신청을 취소합니다.");
@@ -576,6 +580,7 @@ public class Post implements Serializable {
 				System.out.println("올바른 값을 입력해주세요(Y. 신청, N. 취소)");
 			}
 		}
+	
 	}
 
 	public void saveAllPosts() {
