@@ -136,29 +136,31 @@ public abstract class User implements Serializable {
 	}
 
 	public static void selectBoardList() { // 게시판 목록 조회
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
 
 		if (boardMap.isEmpty()) {
 			System.out.println("현재 등록된 게시판이 없습니다.");
 		} else {
 			int index = 1;
-			System.out.println("======================================");
+			System.out.println("=".repeat(LINE_LENGTH));
 			// boardMap의 key(게시판 제목)들을 출력
 			for (String boardName : boardMap.keySet()) {
 				System.out.println(index++ + ". " + boardName); // 게시판 제목 출력
 			}
-			System.out.println("======================================");
+			System.out.println("0. 뒤로가기");
+			System.out.println("=".repeat(LINE_LENGTH));
 
 			while (true) {
-				int selectedNumber = Integer.parseInt(Client.getInput("게시판을 선택해주세요(0.뒤로가기): "));
+				int selectedNumber = Integer.parseInt(Client.getInput("게시판을 선택해주세요 : "));
 				// 입력 받은 번호가 유효한지 체크
 				if (selectedNumber != 0) {
 					if (selectedNumber < 0 || selectedNumber > boardMap.size()) {
-						System.out.println("잘못된 번호입니다. 다시 시도하세요.");
+						System.err.println("잘못된 번호입니다. 다시 시도하세요.");
 					} else {
 						// 선택된 번호에 해당하는 게시판 찾기
 						String selectedBoardName = (String) boardMap.keySet().toArray()[selectedNumber - 1];
 						Board selectedBoard = boardMap.get(selectedBoardName);
-						System.out.println("선택한 게시판: " + selectedBoardName);
+						System.out.println("선택한 게시판 : " + selectedBoardName);
 						selectedBoard.run();
 						return;
 						// 이제 selectedBoard를 사용하여 해당 게시판에 접근할 수 있음

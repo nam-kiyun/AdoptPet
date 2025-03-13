@@ -64,7 +64,7 @@ public class Board implements Serializable {
 			System.out.println("6. 뒤로 가기");
 			System.out.println("=".repeat(LINE_LENGTH));
 
-			String choice = Client.getInput("선택 >> ");
+			String choice = Client.getInput("선택 > ");
 
 			switch (choice) {
 			case "1":
@@ -145,7 +145,7 @@ public class Board implements Serializable {
 
 		System.out.println("-".repeat(LINE_LENGTH));
 
-		if (this.adotPetBoard && !post.isAdoptPetCheck()) {
+		if (this.adotPetBoard && !post.isAdoptPetCheck() && post.getUserId().equals(User.getNowUserId())) {
 			post.adopPetcommentRun();
 		} else {
 			post.commentRun();
@@ -164,10 +164,10 @@ public class Board implements Serializable {
 		Pattern contentPattern = Pattern.compile("^.{10,}$"); // 10자 이상
 		Pattern namePattern = Pattern.compile("^[가-힣a-zA-Z]{2,}$"); // 한글 또는 영문, 최소 2자 이상
 		Pattern agePattern = Pattern.compile("^[0-9]{1,2}$"); // 1~3자리 숫자
-		Pattern genderPattern = Pattern.compile("^[MF]$"); // M 또는 F
+		Pattern genderPattern = Pattern.compile("^[MFmf]$"); // M 또는 F
 
 		System.out.println("\n" + "=".repeat(LINE_LENGTH));
-		String title1 = "📌[ 🐾 입양 게시글 작성 🐾 ]📌";
+		String title1 = "🐾[  입양 게시글 작성  ]🐾";
 		System.out.printf("%" + ((LINE_LENGTH + title1.length()) / 2) + "s\n", title1);
 		System.out.println("=".repeat(LINE_LENGTH));
 
@@ -265,8 +265,7 @@ public class Board implements Serializable {
 
 		while (true) {
 			if (this.adminBoard)
-				continue;
-			System.out.print("\n> 익명으로 작성하시겠습니까? (Y/N): ");
+				break;
 			String choice = Client.getInput("익명으로 작성하시겠습니까? (y/n): ").toUpperCase();
 
 			if (choice.equals("Y")) {
@@ -311,7 +310,7 @@ public class Board implements Serializable {
 		savePosts();
 		post.saveAllPosts();
 
-		System.out.println("게시글이 성공적으로 작성되었습니다.");
+		System.out.println("✅ 게시글이 성공적으로 작성되었습니다.");
 	}
 
 	// 게시글 파일에 저장(직렬화)
@@ -328,7 +327,7 @@ public class Board implements Serializable {
 
 			oos.writeObject(postsMap);
 
-			System.out.println("게시글이 저장되었습니다. ");
+			// System.out.println("게시글이 저장되었습니다. ");
 
 			oos.close();
 			fos.close();
@@ -373,7 +372,7 @@ public class Board implements Serializable {
 		if (postsMap.size() != 0) {
 			printPostList(postsMap);
 
-			int postNum = Integer.parseInt(Client.getInput("> 몇 번 게시글을 수정하시겠습니까? "));
+			int postNum = Integer.parseInt(Client.getInput("몇 번 게시글을 수정하시겠습니까? "));
 
 			if (!postsMap.containsKey(postNum)) {
 				System.out.println("해당 게시글이 존재하지 않습니다.");
@@ -438,7 +437,9 @@ public class Board implements Serializable {
 					System.out.println("해당 번호의 게시글이 존재하지 않습니다.");
 					return;
 				}
-				if (postsMap.get(postNum).getUserId().equals(User.getNowUserId())) {
+				if (postsMap.get(postNum).getUserId().equals(User.getNowUserId())
+						&& User.getNowUserId().equals("admin")) {
+
 					deletePostDir(postNum);
 					postsMap.remove(postNum);
 
@@ -468,7 +469,7 @@ public class Board implements Serializable {
 			System.out.println("자세히 볼 게시글의 번호를 입력해주세요. (취소하려면 0)");
 
 			try {
-				int postNum = Integer.parseInt(Client.getInput("선택: "));
+				int postNum = Integer.parseInt(Client.getInput("선택 > "));
 
 				if (postNum == 0) {
 					System.out.println("게시글 상세보기를 취소했습니다.");
@@ -496,13 +497,18 @@ public class Board implements Serializable {
 
 	// 특정 게시물 검색 (제목으로)
 	public void searchPost() {
+		final int LINE_LENGTH = 75; // 전체 라인 길이
+
 		System.out.println("제목명을 검색해주세요.");
 		System.out.print("검색: ");
 		String word = Client.getInput("제목명을 검색해주세요: ").trim();
 
 		HashMap<Integer, Post> filteredPosts = new HashMap<>();
 
-		System.out.println("===========================검색 목록===========================");
+		System.out.println("\n" + "-".repeat(LINE_LENGTH));
+		String title = "📌[ 검색 목록 ]📌";
+		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+		System.out.println("-".repeat(LINE_LENGTH));
 
 		for (Post post : postsMap.values()) {
 			if (post.getTitle().contains(word)) {
@@ -517,7 +523,6 @@ public class Board implements Serializable {
 
 		printPostList(filteredPosts); // 검색된 게시글만 출력
 
-		System.out.print("자세히 볼 게시글의 번호를 입력해주세요. (취소하려면 0): ");
 		try {
 			int postNum = Integer.parseInt(Client.getInput("자세히 볼 게시글의 번호를 입력해주세요. (취소하려면 0): "));
 
@@ -535,6 +540,7 @@ public class Board implements Serializable {
 
 	// 게시물 정렬 (최신순)
 	public void reversePrintPostList(HashMap<Integer, Post> postMap) {
+		final int LINE_LENGTH = 75; // 전체 라인 길이
 
 		if (postMap.isEmpty()) {
 			System.out.println("등록된 게시글이 없습니다.");
@@ -544,7 +550,14 @@ public class Board implements Serializable {
 		List<Integer> list = new ArrayList<Integer>(postMap.keySet());
 		list.sort(Comparator.reverseOrder());
 
-		System.out.println("========================= 게시글 목록 =========================");
+		System.out.println("\n" + "=".repeat(LINE_LENGTH));
+		String title = "📌[ 게시글 목록 ]📌";
+		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+		System.out.println("=".repeat(LINE_LENGTH));
+
+		// 게시글 테이블 헤더
+		System.out.printf("| %-5s | %-15s | %-20s | %-10s |\n", "번호", "제목", "내용", "작성자");
+		System.out.println("-".repeat(LINE_LENGTH));
 
 		for (Post post : postMap.values()) {
 			// 내용 길이 제한 (15자 이상 10자까지만 출력 + "...")
@@ -553,11 +566,11 @@ public class Board implements Serializable {
 				content = content.substring(0, 10) + "..."; // 길이 제한 적용
 			}
 
-			System.out.println("번호: " + post.getPostNum() + " | 제목: " + post.getTitle() + " | 내용: " + content
-					+ " | 작성자: " + post.getAuthor());
+			System.out.printf("| %-5d | %-15s | %-20s | %-10s |\n", post.getPostNum(), post.getTitle(),
+					post.getContent().replace("\n", ", ").substring(0, 15) + ".....", post.getAuthor());
 		}
 
-		System.out.println("=============================================================");
+		System.out.println("=".repeat(LINE_LENGTH));
 
 	}
 

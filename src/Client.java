@@ -101,59 +101,66 @@ public class Client extends User implements Serializable {
 	}
 
 	public void editProfile() {
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
+		System.out.println("\n" + "=".repeat(LINE_LENGTH));
+		String title = "📌[ 회원정보 수정 ]📌";
+		System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+		System.out.println("=".repeat(LINE_LENGTH));
+
 		String insertPassWord, changeNickName;
 
-		insertPassWord = getInput("회원정보 수정을 진행하려면 비밀번호를 입력해주세요: ");
+		insertPassWord = getInput("\n회원정보 수정을 진행하려면 비밀번호를 입력해주세요: ");
 		if (verifyPassword(User.hashPassword(insertPassWord))) {
 			// 현재 로그인된 아이디를 키값으로 해당 유저리스트 맵 벨류인 유저 객체의 패스워드를 겟 한 후 입력한 패스워드와 비교
 			while (true) {
-				String choice = getInput("변경할 정보를 선택해주세요(1.비밀번호, 2.닉네임): ");
+				String choice = getInput("\n변경할 정보를 선택해주세요(1.비밀번호, 2.닉네임): ");
 				switch (choice) {
 				case "1":
 					while (true) {
-						String chpass = getInput("변경할 비밀번호를 입력해주세요: ");
+						String chpass = getInput("\n변경할 비밀번호를 입력해주세요: ");
 						if (isValidPassword(chpass)) {// password 패턴 확인
 							super.getUserMap().get(super.getNowUserId()).setPassword(chpass);
 							// 클라이언트 맵 키값으로 현재 로그인 아이디 값으로 밸류값으로 클라이언트 객체불러와 set로 패스워드 변경
-							System.out.println("비밀번호가 성공적으로 변경되었습니다.");
+							System.out.println("\n✅ 비밀번호가 성공적으로 변경되었습니다.");
 							save();
 							break;
 						} else {
-							System.out.println("비밀번호는 영문자, 숫자, 특수문자를 포함해야 하며, 길이는 8~15자여야 하고, 공백은 사용할 수 없습니다.");
+							System.out.println("\n⚠️ 비밀번호는 영문자, 숫자, 특수문자를 포함해야 하며, 길이는 8~15자여야 하고, 공백은 사용할 수 없습니다.");
 						}
 					}
 					return;
 
 				case "2":
 					while (true) {
-						changeNickName = getInput("변경할 닉네임을 입력해주세요: ");
+						changeNickName = getInput("\n변경할 닉네임을 입력해주세요: ");
 						if (isValidNickname(changeNickName)) { // nickName 패턴 체크
 							if (isNicknameTaken(changeNickName)) {// nickName 형식 맞으면 중복 체크
-								System.out.println("해당 닉네임은 이미 사용중입니다.");
+								System.out.println("\n⚠️ 해당 닉네임은 이미 사용중입니다.");
 							}
 
 							else {
 								super.getUserMap().get(super.getNowUserId()).setNickName(changeNickName); // 패턴과 중복체크
 																											// 통과시 변경
-								System.out.println("닉네임을 성공적으로 변경했습니다.");
+								System.out.println("\n✅ 닉네임을 성공적으로 변경했습니다.");
 								save();
 								break;
 							}
 
 						} else {
 							System.out.println(
-									"닉네임은 영문자 또는 한글로 시작해야 하며, 영문자, 한글, 숫자를 포함하고, 길이는 2~8자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
+									"\n⚠️ 닉네임은 영문자 또는 한글로 시작해야 하며, 영문자, 한글, 숫자를 포함하고, 길이는 2~8자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
 						}
 					}
 
 					return;
 				default:
-					System.out.println("올바른 값을 입력해주세요(1.비밀번호, 2.닉네임)");
+					System.out.println("\n⚠️ 올바른 값을 입력해주세요(1.비밀번호, 2.닉네임)");
 					break;
 				}
 			}
 		} else {
-			System.out.println("비밀번호가 맞지 않습니다.");
+			System.out.println("\n비밀번호가 맞지 않습니다.");
 			return;
 		}
 	}
@@ -177,16 +184,18 @@ public class Client extends User implements Serializable {
 
 	@Override
 	public void menu() {// 클라이언트 로그인 이후 메뉴
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
 		switch (getUserMap().get(getNowUserId()).getAlarm()) {
 		case "1":
-			String ch = getInput("확인하지 않은 입양승인요청이 존재합니다. 해당 메뉴로 이동할까요?(Y. 이동)");
+			String ch = getInput("확인하지 않은 입양승인요청이 존재합니다. 해당 메뉴로 이동할까요?(Y , 이동):");
 			if (ch.toUpperCase().equals("Y")) {
 				animalAdoptionRequest();
 			}
 			getUserMap().get(getNowUserId()).setAlarm("");
 			break;
 		case "2":
-			String ch1 = getInput("확인하지 않은 입양확정요청이 존재합니다. 해당 메뉴로 이동할까요?(Y. 이동)");
+			String ch1 = getInput("확인하지 않은 입양확정요청이 존재합니다. 해당 메뉴로 이동할까요?(Y , 이동):");
 			if (ch1.toUpperCase().equals("Y")) {
 				animalAdoptionAnswer();
 			}
@@ -198,14 +207,18 @@ public class Client extends User implements Serializable {
 		}
 
 		while (true) {
-			System.out.println("======================================");
+			System.out.println("\n" + "=".repeat(LINE_LENGTH));
+			String title = "📌[ 메인 메뉴 ]📌";
+			System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+			System.out.println("=".repeat(LINE_LENGTH));
+
 			System.out.println("1.게시판 목록보기");
 			System.out.println("2.입양 요청 승인 목록보기");
 			System.out.println("3.입양 승인 확정 목록보기");
 			System.out.println("4.회원정보 수정");
 			System.out.println("5.회원탈퇴");
 			System.out.println("6.로그아웃");
-			System.out.println("======================================");
+			System.out.println("=".repeat(LINE_LENGTH));
 			String choice = getInput("원하시는 메뉴를 선택해주세요: ");
 
 			switch (choice) {
@@ -236,8 +249,10 @@ public class Client extends User implements Serializable {
 	}
 
 	public void animalAdoptionRequest() {
+		final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
 		Map<String, String> adoptPetMap = Client.getUserMap().get(getNowUserId()).adoptPetMap();
-		System.out.println(adoptPetMap.toString());
+		// System.out.println(adoptPetMap.toString());
 		if (adoptPetMap != null && !adoptPetMap.isEmpty()) {
 			String adoptPetMapString = adoptPetMap.toString();
 			String[] entries = adoptPetMapString.substring(1, adoptPetMapString.length() - 1).split(", ");
@@ -262,16 +277,16 @@ public class Client extends User implements Serializable {
 
 			// 저장된 내용 출력
 			if (!list.isEmpty()) {
-				System.out.println("======================================");
+				System.out.println("=".repeat(LINE_LENGTH));
 				for (String[] data : list) {
 					System.out.println(data[2] + "의 " + data[0] + "번 게시글 \"" + data[1] + "님이 " + data[3] + "했습니다.");
 				}
-				System.out.println("======================================");
+				System.out.println("=".repeat(LINE_LENGTH));
 
 				int selectedIndex = -1; // 인덱스를 찾기 위한 변수, -1은 찾지 못했을 경우
 
 				while (true) {
-					String selectedChoice = getInput("1. 요청승인, 2. 요청취소, 3. 뒤로가기");
+					String selectedChoice = getInput("1.요청승인  2.요청취소  3.뒤로가기");
 					indexnumerr: switch (selectedChoice) {
 					case "1":
 						String selectedPostNum = getInput("승인할 게시글 번호를 입력해주세요");
@@ -335,7 +350,7 @@ public class Client extends User implements Serializable {
 
 	public void animalAdoptionAnswer() {
 		Map<String, String> adoptPetMap = Client.getUserMap().get(getNowUserId()).adoptPetMap();
-		System.out.println(adoptPetMap.toString());
+		// System.out.println(adoptPetMap.toString());
 		if (adoptPetMap != null && !adoptPetMap.isEmpty()) {
 			String adoptPetMapString = adoptPetMap.toString();
 			String[] entries = adoptPetMapString.substring(1, adoptPetMapString.length() - 1).split(", ");
@@ -360,11 +375,14 @@ public class Client extends User implements Serializable {
 
 			// 저장된 내용 출력
 			if (!list.isEmpty()) {
-				System.out.println("======================================");
+				final int LINE_LENGTH = 75; // 출력 라인 길이 통일
+
+				System.out.println("=".repeat(LINE_LENGTH));
+
 				for (String[] data : list) {
 					System.out.println(data[2] + "의 " + data[0] + "번 게시글 " + data[1] + "님이 " + data[3] + "했습니다.");
 				}
-				System.out.println("======================================");
+				System.out.println("=".repeat(LINE_LENGTH));
 				String choice = getInput("1. 입양 확정, 2. 입양 취소, 3. 뒤로가기");
 				int selectedIndex = -1;
 
@@ -440,16 +458,24 @@ public class Client extends User implements Serializable {
 	}
 
 	public static void run() {
+		//AnimalAsciiArt.display();
+
+		final int LINE_LENGTH = 75; // 전체 라인 길이
+
 		Client.initialize();// 초기 Admin 설정 및 파일 로드
 		Client main = new Client("main", " main", "main"); // 회원가입 및 로그인용 객체 생성
 		Client.initializeBoard();
 
 		while (true) {
-			System.out.println("======================================");
+			System.out.println("\n" + "=".repeat(LINE_LENGTH));
+			String title = "📌[ 회원 관리 ]📌";
+			System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+			System.out.println("=".repeat(LINE_LENGTH));
+
 			System.out.println("1.로그인");
 			System.out.println("2.회원가입");
 			System.out.println("3.종료");
-			System.out.println("======================================");
+			System.out.println("=".repeat(LINE_LENGTH));
 			String choice = getInput("원하시는 메뉴를 선택해주세요: ");
 
 			switch (choice) {
