@@ -252,7 +252,7 @@ public abstract class User implements Serializable {
 		boardLoad(); // 기존의 board 데이터 불러오기
 
 		// 게시판 이름 배열
-		String[] boardNames = { "고양이 입양 게시판", "강아지 입양 게시판", "자유 게시판" };
+		String[] boardNames = { "공 지 사 항", "고양이 입양 게시판", "강아지 입양 게시판", "자유 게시판" };
 
 		// 게시판 초기화 및 폴더 생성
 		for (String boardName : boardNames) {
@@ -267,11 +267,17 @@ public abstract class User implements Serializable {
 
 			// 게시판이 없으면 새로 추가
 			if (!boardMap.containsKey(boardName)) {
-				if (boardName.equals("자유 게시판")) {
+				switch (boardName) {
+				case ("공 지 사 항"):
+					boardMap.put(boardName, new Board(boardName, boardPath, false, true));
+					break;
+				case ("자유 게시판"):
 					boardMap.put(boardName, new Board(boardName, boardPath));
-				} // 자유게시판만 일반게시판으로 초기화
-				else {
+				 // 자유게시판만 일반게시판으로 초기화
+					break;
+				default:
 					boardMap.put(boardName, new Board(boardName, boardPath, true, false));
+					break;
 				}
 				System.out.println(boardName + " 게시판을 초기화했습니다.");
 			}

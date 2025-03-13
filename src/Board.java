@@ -49,7 +49,7 @@ public class Board implements Serializable {
 		while (true) {
 			// 📌 게시판 헤더 출력
 			String centeredTitle = String.format("%" + ((LINE_LENGTH + boardName.length() + 10) / 2) + "s",
-					"📌 [ " + boardName + " 게시판 ] 📌");
+					"📌 [ " + boardName + " ] 📌");
 
 			System.out.println("\n" + "=".repeat(LINE_LENGTH));
 //	        System.out.printf(" %-64s \n", "[ " + boardName + " 게시판 ]");
@@ -61,7 +61,7 @@ public class Board implements Serializable {
 			System.out.println("3. 게시글 수정");
 			System.out.println("4. 게시글 삭제");
 			System.out.println("5. 검색 하기");
-			System.out.println("6. 뒤로 가기");
+			System.out.println("0. 뒤로 가기");
 			System.out.println("=".repeat(LINE_LENGTH));
 
 			String choice = Client.getInput("선택 > ");
@@ -82,7 +82,7 @@ public class Board implements Serializable {
 			case "5":
 				searchPost();
 				break;
-			case "6":
+			case "0":
 				return;
 			default:
 				System.err.println("잘못된 입력입니다. 다시 선택하세요.");
@@ -145,7 +145,7 @@ public class Board implements Serializable {
 
 		System.out.println("-".repeat(LINE_LENGTH));
 
-		if (this.adotPetBoard && !post.isAdoptPetCheck() && post.getUserId().equals(User.getNowUserId())) {
+		if (this.adotPetBoard && !post.isAdoptPetCheck() && !post.getUserId().equals(User.getNowUserId())) {
 			post.adopPetcommentRun();
 		} else {
 			post.commentRun();
@@ -249,8 +249,8 @@ public class Board implements Serializable {
 		}
 
 		// 정규 표현식 패턴 (제목: 2자 이상, 내용: 10자 이상)
-		Pattern titlePattern = Pattern.compile("^.{2,}$");
-		Pattern contentPattern = Pattern.compile("^.{10,}$");
+		Pattern titlePattern = Pattern.compile("^[a-zA-Z가-힣].{1,14}$");
+		Pattern contentPattern = Pattern.compile("^.{10,200}$");
 
 		boolean check = false;
 
@@ -280,11 +280,11 @@ public class Board implements Serializable {
 		}
 		String title;
 		while (true) {
-			title = Client.getInput("제목을 입력해주세요 (2자 이상): ").trim();
+			title = Client.getInput("제목을 입력해주세요 (2~15자 영문이나 한글로 시작): ").trim();
 			if (titlePattern.matcher(title).matches()) {
 				break; // 유효한 입력이면 루프 종료
 			}
-			System.out.println("제목은 최소 2자 이상 입력해야 합니다.");
+			System.out.println("제목은 2~15자 영문이나 한글로 시작해야 합니다.");
 		}
 
 		String content;
