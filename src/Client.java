@@ -91,7 +91,7 @@ public class Client extends User implements Serializable {
 					break;// nickName이 패턴에 맞고 중복되지 않으면 종료
 				}
 			} else {// 형식에 맞지 않을 경우
-				System.out.println("닉네임은 영문자 또는 한글로 시작해야 하며, 영문자, 한글, 숫자를 포함하고, 길이는 2~8자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
+				System.out.println("닉네임은 영문자 또는 한글로 시작해야 하며, 영문자, 한글, 숫자를 포함하고, \n길이는 2~8자여야 하며, 공백과 특수문자는 사용할 수 없습니다.");
 			}
 		}
 		super.getUserMap().put(userId, new Client(userId, User.hashPassword(password), nickName));
@@ -173,6 +173,7 @@ public class Client extends User implements Serializable {
 			super.setUserId(""); // 현재 로그인된 계정이 삭제되므로 현재 로그인 id값 초기화
 			System.out.println("계정이 성공적으로 삭제되었습니다.");
 			save();// 회원정보 삭제 후 파일저장
+			logout();
 			// 초기 로그인 화면 호출
 		} else {
 			System.out.println("비밀번호가 맞지 않습니다.");

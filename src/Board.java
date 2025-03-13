@@ -201,7 +201,7 @@ public class Board implements Serializable {
 		// 📌 게시글 저장
 		postsMap.put(postNum, post);
 		savePosts();
-		post.saveAllPosts();
+		
 
 		System.out.println("✅ 입양 게시글이 성공적으로 작성되었습니다.");
 
@@ -276,7 +276,7 @@ public class Board implements Serializable {
 
 		postsMap.put(postNum, post);
 		savePosts();
-		post.saveAllPosts();
+		
 
 		System.out.println("✅ 게시글이 성공적으로 작성되었습니다.");
 	}

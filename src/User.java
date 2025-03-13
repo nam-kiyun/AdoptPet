@@ -19,8 +19,6 @@ public abstract class User implements Serializable {
 	private LocalDateTime banTime;
 	private static String nowUserId;
 	private String alarm; // 알림 구현
-	// 직렬화 버전을 고정
-	// TODO: 직렬화 버전을 고정하는 이유를 아직 잘 모르겠음. 추후에 공부하고 추가할 것.
 	private static final long serialVersionUID = 1L;
 	// static으로 선언된 userMap은 프로그램 실행시 한번만 생성되고, 모든 객체가 공유한다.
 	private static Map<String, User> userMap = new HashMap<>();
@@ -79,17 +77,11 @@ public abstract class User implements Serializable {
 	public static void load() {
 		File directory = new File(defaultpath); // 데이터 로드 시 기본 폴더 생성
 		if (!directory.exists()) {
-			if (directory.mkdirs()) {
-				System.out.println("폴더가 존재하지 않아 생성되었습니다: " + directory.getAbsolutePath());
-			} else {
-				System.err.println("폴더 생성 실패: " + directory.getAbsolutePath());
-				return;
-			}
+			directory.mkdirs();
 		}
 
 		File file = new File(path);
 		if (!file.exists()) {
-			System.out.println("기존 데이터가 없습니다. 새로운 파일을 생성합니다.");
 			return;
 		}
 
@@ -99,7 +91,6 @@ public abstract class User implements Serializable {
 			HashMap<String, User> map = (HashMap) obj;
 			userMap.putAll(map);
 
-			System.out.println("사용자 데이터 로드 완료! 현재 등록된 계정 수: " + userMap.size());
 		} catch (Exception e) {
 			System.err.println("데이터 로드 중 오류 발생!");
 			e.printStackTrace();
@@ -118,9 +109,9 @@ public abstract class User implements Serializable {
 		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
 			boardMap = (Map<String, Board>) in.readObject();
 
-			System.out.println("보드 데이터 로드 완료! 현재 등록된 보드 수: " + boardMap.size());
+			;
 		} catch (Exception e) {
-			System.err.println("보드 데이터 로드 중 오류 발생!");
+
 			e.printStackTrace();
 		}
 
@@ -163,8 +154,6 @@ public abstract class User implements Serializable {
 						System.out.println("선택한 게시판 : " + selectedBoardName);
 						selectedBoard.run();
 						return;
-						// 이제 selectedBoard를 사용하여 해당 게시판에 접근할 수 있음
-						// 예: selectedBoard.displayBoard() 또는 다른 메서드를 통해 게시판 작업을 처리}
 					}
 				} else {
 					return;
@@ -231,21 +220,13 @@ public abstract class User implements Serializable {
 	// 프로그램 실행시 시행될 데이터 로드
 	public static void initialize() {
 		load();
-		System.out.println("사용자 데이터를 불러왔습니다.");
-		// 기본 Admin 계정 생성
-		System.out.println("기본 Admin 계정을 확인.");
-
 		if (!userMap.containsKey("admin")) {
 			Admin defaultAdmin = new Admin("admin", hashPassword("admin123"), "관리자");
 			defaultAdmin.setWrongCount(0);
 			userMap.put("admin", defaultAdmin);
 			save();
 			// 테스트 하기 위해 계정 생성 메시지 출력
-			System.out.println("기본 Admin 계정이 생성되었습니다. (ID: admin, PW: admin123)");
-		} else {
-			System.out.println("기본 Admin 계정이 이미 존재합니다.");
-
-		}
+		} 
 	}
 
 	public static void initializeBoard() {
@@ -262,7 +243,6 @@ public abstract class User implements Serializable {
 			File boardFolder = new File(boardPath);
 			if (!boardFolder.exists()) {
 				boardFolder.mkdirs(); // 폴더 생성
-				System.out.println(boardName + " 폴더를 생성했습니다.");
 			}
 
 			// 게시판이 없으면 새로 추가
@@ -279,12 +259,10 @@ public abstract class User implements Serializable {
 					boardMap.put(boardName, new Board(boardName, boardPath, true, false));
 					break;
 				}
-				System.out.println(boardName + " 게시판을 초기화했습니다.");
 			}
 		}
 		boardSave();
 
-		System.out.println("보드 데이터를 불러왔습니다.");
 	}
 
 	public abstract void menu();
