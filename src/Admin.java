@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -15,6 +16,7 @@ public class Admin extends User implements Serializable {
 		 * 객체 생성과 동시에 올바르게 초기화됨. NullPointerException을 방지할 수 있음.
 		 */
 		super(userId, password, nickName);
+		super.adoptPet = new HashMap<>();
 	}
 
 	public void searchUser(String userId) {
