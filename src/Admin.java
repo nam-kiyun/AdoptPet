@@ -88,7 +88,7 @@ public class Admin extends User implements Serializable {
 	private void createBoard() {
 		while (true) {
 
-			String boardType = Client.getInput("게시판의 유형을 선택해주세요(1. 입양게시판, 2. 일반게시판, 3. 관리자게시판): ");
+			String boardType = Client.getInput("게시판의 유형을 선택해주세요(1.입양게시판  2.일반게시판  3.관리자게시판): ");
 			if (boardType.equals("1") || boardType.equals("2") || boardType.equals("3")) {// 게시판 유형 체크, true 면 제목입력
 
 				String boardName = Client.getInput("새로운 게시판의 이름을 입력하세요(한글 및 영문자 2~15): ");
@@ -97,7 +97,7 @@ public class Admin extends User implements Serializable {
 					System.out.println("게시판 이름은 2~15자이며, 한글 또는 영어로 시작해야 합니다. (숫자와 공백은 허용, 특수문자는 불가)");
 				} else {
 					if (boardMap.containsKey(boardName)) {// 패턴 맞을 경우 중복확인
-						System.out.println("이름이 이미 사용 중인 게시판이 있습니다.");
+						System.err.println("이름이 이미 사용 중인 게시판이 있습니다.");
 
 					}
 
@@ -129,7 +129,6 @@ public class Admin extends User implements Serializable {
 						System.out.println("새로운 게시판이 성공적으로 생성되었습니다.");
 
 						boardSave();
-						System.out.println(boardMap.toString());
 						return;
 					}
 				}
@@ -171,7 +170,7 @@ public class Admin extends User implements Serializable {
 
 		System.out.println("게시판이 성공적으로 삭제되었습니다.");
 		// 옵션으로 boardMap을 저장할 수 있음
-		save();
+		boardSave();
 	}
 
 	// 폴더 내 모든 파일과 폴더를 삭제하는 메서드
@@ -223,14 +222,11 @@ public class Admin extends User implements Serializable {
 				showUsersList();
 				break;
 			case 2:
-				System.out.print("검색할 아이디 입력: ");
-				String searchId = scanner.nextLine();
-				searchUser(searchId);
+				searchUser(Client.getInput("검색할 아이디 입력: "));
 				break;
 			case 3:
-				System.out.print("삭제할 아이디 입력: ");
-				String deleteId = scanner.nextLine();
-				deleteUser(deleteId);
+				showUsersList();
+				deleteUser(Client.getInput("삭제할 아이디 입력: "));
 				break;
 			case 4:
 				System.out.println("로그아웃 되었습니다.");

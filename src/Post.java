@@ -367,24 +367,27 @@ public class Post implements Serializable {
 	}
 
 	public void writeAdoptPet() {
-	       while (true) {
-	           String choice = Client.getInput("입양을 신청하시려면 \'Y\'를 입력해주세요(Y. 신청, N. 취소): ");
-	           if (choice.toUpperCase().equals("Y")) {
-	              Client.getUserMap().get(getUserId()).adoptPetMap().put(getPostNum() + "/" + Client.getNowUserId(),this.postPath.replace(this.getTitle(),"").replace(Client.defaultpath, "").replace("\\","")+"/입양승인요청");
-	              //adoptPetMap(String key, String value) > key = postNum/nowUserId, value = post의 boardName/입양승인요청 
-	              //put를 getUserId() post작성자 user 객체의 adoptPetMap()
-	              User.getUserMap().get(getUserId()).setAlarm("1");
-	               System.out.println("입양 신청이 완료 되었습니다.");
-	               
-	               return;
-	           } else if (choice.toUpperCase().equals("N")) {
-	               System.out.println("입양 신청을 취소합니다.");
-	               return;
-	           } else {
-	               System.out.println("올바른 값을 입력해주세요(Y. 신청, N. 취소)");
-	           }
-	       }
-	   }
+		while (true) {
+			String choice = Client.getInput("입양을 신청하시려면 \'Y\'를 입력해주세요(Y. 신청, N. 취소): ");
+			if (choice.toUpperCase().equals("Y")) {
+				Client.getUserMap().get(getUserId()).adoptPetMap().put(getPostNum() + "/" + Client.getNowUserId(),
+						this.postPath.replace(this.getTitle(), "").replace(Client.defaultpath, "").replace("\\", "")
+								+ "/입양승인요청");
+				// adoptPetMap(String key, String value) > key = postNum/nowUserId, value =
+				// post의 boardName/입양승인요청
+				// put를 getUserId() post작성자 user 객체의 adoptPetMap()
+				User.getUserMap().get(getUserId()).setAlarm("1");
+				System.out.println("입양 신청이 완료 되었습니다.");
+
+				return;
+			} else if (choice.toUpperCase().equals("N")) {
+				System.out.println("입양 신청을 취소합니다.");
+				return;
+			} else {
+				System.out.println("올바른 값을 입력해주세요(Y. 신청, N. 취소)");
+			}
+		}
+	}
 
 	// 게시글 및 댓글 개별 파일 저장
 	public void saveAllPosts() {
