@@ -202,6 +202,8 @@ public class Admin extends User implements Serializable {
 
 			String title = "📌[ Admin 메뉴 ]📌";
 			System.out.printf("%" + ((LINE_LENGTH + title.length()) / 2) + "s\n", title);
+			System.out.println("\n" + "=".repeat(LINE_LENGTH));
+
 
 			System.out.println("1. 전체 사용자 목록 보기");
 			System.out.println("2. 사용자 검색");
@@ -212,7 +214,7 @@ public class Admin extends User implements Serializable {
 			System.out.println("7. 게시판 목록 보기");
 			System.out.println("0. 종료");
 			System.out.println("=".repeat(LINE_LENGTH));
-			System.out.print("선택 >> ");
+			System.out.print("선택 > ");
 			Scanner scanner = new Scanner(System.in);
 			int choice = scanner.nextInt();
 			scanner.nextLine();

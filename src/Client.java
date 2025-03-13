@@ -188,14 +188,14 @@ public class Client extends User implements Serializable {
 
 		switch (getUserMap().get(getNowUserId()).getAlarm()) {
 		case "1":
-			String ch = getInput("확인하지 않은 입양승인요청이 존재합니다. 해당 메뉴로 이동할까요?(Y , 이동):");
+			String ch = getInput("확인하지 않은 입양승인요청이 존재합니다. 해당 메뉴로 이동할까요?(Y/N):");
 			if (ch.toUpperCase().equals("Y")) {
 				animalAdoptionRequest();
 			}
 			getUserMap().get(getNowUserId()).setAlarm("");
 			break;
 		case "2":
-			String ch1 = getInput("확인하지 않은 입양확정요청이 존재합니다. 해당 메뉴로 이동할까요?(Y , 이동):");
+			String ch1 = getInput("확인하지 않은 입양확정요청이 존재합니다. 해당 메뉴로 이동할까요?(Y/N):");
 			if (ch1.toUpperCase().equals("Y")) {
 				animalAdoptionAnswer();
 			}
@@ -217,7 +217,7 @@ public class Client extends User implements Serializable {
 			System.out.println("3.입양 승인 확정 목록보기");
 			System.out.println("4.회원정보 수정");
 			System.out.println("5.회원탈퇴");
-			System.out.println("6.로그아웃");
+			System.out.println("0.로그아웃");
 			System.out.println("=".repeat(LINE_LENGTH));
 			String choice = getInput("원하시는 메뉴를 선택해주세요: ");
 
@@ -236,8 +236,8 @@ public class Client extends User implements Serializable {
 				break;
 			case "5":
 				this.deleteAccount();
-				return;
-			case "6":
+				break;
+			case "0":
 				super.logout();
 				return;
 
@@ -286,7 +286,7 @@ public class Client extends User implements Serializable {
 				int selectedIndex = -1; // 인덱스를 찾기 위한 변수, -1은 찾지 못했을 경우
 
 				while (true) {
-					String selectedChoice = getInput("1.요청승인  2.요청취소  3.뒤로가기");
+					String selectedChoice = getInput("1.요청승인  2.요청취소  0.뒤로가기");
 					indexnumerr: switch (selectedChoice) {
 					case "1":
 						String selectedPostNum = getInput("승인할 게시글 번호를 입력해주세요");
@@ -332,7 +332,7 @@ public class Client extends User implements Serializable {
 							}
 						}
 
-					case "3":
+					case "0":
 						return;
 
 					default:
@@ -383,7 +383,7 @@ public class Client extends User implements Serializable {
 					System.out.println(data[2] + "의 " + data[0] + "번 게시글 " + data[1] + "님이 " + data[3] + "했습니다.");
 				}
 				System.out.println("=".repeat(LINE_LENGTH));
-				String choice = getInput("1. 입양 확정, 2. 입양 취소, 3. 뒤로가기");
+				String choice = getInput("1. 입양 확정, 2. 입양 취소, 0. 뒤로가기");
 				int selectedIndex = -1;
 
 				switch (choice) {
@@ -441,7 +441,7 @@ public class Client extends User implements Serializable {
 						}
 					}
 
-				case "3":
+				case "0":
 
 					return;
 
@@ -474,7 +474,7 @@ public class Client extends User implements Serializable {
 
 			System.out.println("1.로그인");
 			System.out.println("2.회원가입");
-			System.out.println("3.종료");
+			System.out.println("0.종료");
 			System.out.println("=".repeat(LINE_LENGTH));
 			String choice = getInput("원하시는 메뉴를 선택해주세요: ");
 
@@ -485,7 +485,7 @@ public class Client extends User implements Serializable {
 			case "2":// 회원가입 진행
 				main.register();
 				break;
-			case "3":// 종료
+			case "0":// 종료
 				System.out.println("프로그램을 종료합니다.");
 				save();
 				return;
