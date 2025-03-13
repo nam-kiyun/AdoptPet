@@ -185,16 +185,14 @@ public class Post implements Serializable {
 				replyNum = Integer.parseInt(parts[1]);
 
 				isReply = true;
-				if (!repliesMap.get(parentNum).get(replyNum).getUserId().equals(User.getNowUserId())
-						|| !User.getNowUserId().equals("admin")) {
+				if (!repliesMap.get(parentNum).get(replyNum).getUserId().equals(User.getNowUserId())) {
 					System.out.println("본인이 작성한 댓글이 아닙니다.");
 					return;
 				}
 				// 2️⃣ **메인 댓글 (숫자만 입력)**
 				else {
 					parentNum = Integer.parseInt(input);
-					if (!commentsMap.get(parentNum).getUserId().equals(User.getNowUserId())
-							|| !User.getNowUserId().equals("admin")) {
+					if (!commentsMap.get(parentNum).getUserId().equals(User.getNowUserId())) {
 						System.out.println("본인이 작성한 댓글이 아닙니다.");
 						return;
 					}
@@ -272,6 +270,7 @@ public class Post implements Serializable {
 		}
 	}
 
+	//댓글 삭제
 	public void deleteComment() {
 		System.out.println("삭제할 댓글 번호를 입력해주세요.");
 		String input = Client.getInput("> 삭제할 댓글 번호를 입력해주세요 (대댓글은 1-1 형식으로 입력해주세요 : ").trim();
@@ -291,10 +290,21 @@ public class Post implements Serializable {
 				replyNum = Integer.parseInt(parts[1]);
 
 				isReply = true;
+				if (!repliesMap.get(parentNum).get(replyNum).getUserId().equals(User.getNowUserId())
+						|| !User.getNowUserId().equals("admin")) {
+					System.out.println("본인이 작성한 댓글이 아닙니다.");
+					return;
+				}
 			}
 			// 2️⃣ **메인 댓글 (숫자만 입력)**
 			else {
 				parentNum = Integer.parseInt(input);
+				
+				if (!commentsMap.get(parentNum).getUserId().equals(User.getNowUserId())
+						|| !User.getNowUserId().equals("admin")) {
+					System.out.println("본인이 작성한 댓글이 아닙니다.");
+					return;
+				}
 			}
 		} catch (NumberFormatException e) {
 			System.err.println("⚠ 올바른 형식으로 입력해주세요! (예: 1 또는 1-1)");
